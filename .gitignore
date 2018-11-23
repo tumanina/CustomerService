@@ -1,0 +1,11 @@
+.vs/CustomerService/v15/Server/sqlite3/db.lock
+CustomerService.Api/bin/Debug/netcoreapp2.0/CustomerService.Api.pdb
+CustomerService.Api/bin/
+CustomerService.Api/obj/Debug/netcoreapp2.0/CustomerService.Api.csproj.CopyComplete
+CustomerService.Api/obj/
+CustomerService.Business/bin/
+CustomerService.Business/obj/
+CustomerService.Repositories/bin/
+CustomerService.Repositories/obj/
+Tests/CustomerService.Unit.Tests/bin/
+Tests/CustomerService.Unit.Tests/obj/
