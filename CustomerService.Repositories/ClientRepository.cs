@@ -103,5 +103,66 @@ namespace CustomerService.Repositories
                 return true;
             }
         }
+
+        public bool UpdateGoogleAuthCode(Guid id, string authCode)
+        {
+            using (var context = _factory.CreateDBContext())
+            {
+                var result = context.Client.SingleOrDefault(b => b.Id == id);
+                if (result != null)
+                {
+                    result.GoogleAuthCode = authCode;
+                    result.GoogleAuthActive = false;
+                    result.UpdatedDate = DateTime.UtcNow;
+                    context.SaveChanges();
+                }
+                else
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+        public bool ActivateGoogleAuthCode(Guid id)
+        {
+            using (var context = _factory.CreateDBContext())
+            {
+                var result = context.Client.SingleOrDefault(b => b.Id == id);
+                if (result != null)
+                {
+                    result.GoogleAuthActive = true;
+                    result.UpdatedDate = DateTime.UtcNow;
+                    context.SaveChanges();
+                }
+                else
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+        public bool DeactivateGoogleAuthCode(Guid id)
+        {
+            using (var context = _factory.CreateDBContext())
+            {
+                var result = context.Client.SingleOrDefault(b => b.Id == id);
+                if (result != null)
+                {
+                    result.GoogleAuthActive = false;
+                    result.UpdatedDate = DateTime.UtcNow;
+                    context.SaveChanges();
+                }
+                else
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        }
     }
 }

@@ -246,6 +246,76 @@ namespace CustomerService.UnitTests.ServiceTests
         }
 
         [TestMethod]
+        public void ConfirmSession_Success_ShouldReturnTrue()
+        {
+            SessionRepository.Invocations.Clear();
+            ClientService.Invocations.Clear();
+
+            var id = Guid.NewGuid();
+            var clientId = Guid.NewGuid();
+            var oneTimePasword = "12345678";
+
+            SessionRepository.Setup(x => x.ConfirmSession(clientId, id)).Returns(true);
+            ClientService.Setup(x => x.ValidateClientByGoogleAuth(clientId, oneTimePasword)).Returns(true);
+
+            var service = new SessionService(SessionRepository.Object, ClientService.Object);
+
+            var result = service.ConfirmSession(clientId, id, oneTimePasword);
+
+            SessionRepository.Verify(x => x.ConfirmSession(clientId, id), Times.Once);
+            ClientService.Verify(x => x.ValidateClientByGoogleAuth(clientId, oneTimePasword), Times.Once);
+            Assert.AreEqual(result, true);
+        }
+
+        [TestMethod]
+        public void ConfirmSession_GoogleAuthReturnsFalse_ShouldThrowException()
+        {
+            SessionRepository.Invocations.Clear();
+            ClientService.Invocations.Clear();
+
+            var id = Guid.NewGuid();
+            var clientId = Guid.NewGuid();
+            var oneTimePasword = "12345678";
+
+            SessionRepository.Setup(x => x.ConfirmSession(clientId, id)).Returns(true);
+            ClientService.Setup(x => x.ValidateClientByGoogleAuth(clientId, oneTimePasword)).Returns(false);
+
+            var service = new SessionService(SessionRepository.Object, ClientService.Object);
+
+            try
+            {
+                var result = service.ConfirmSession(clientId, id, oneTimePasword);
+            }
+            catch (Exception)
+            {
+                SessionRepository.Verify(x => x.ConfirmSession(clientId, id), Times.Never);
+                ClientService.Verify(x => x.ValidateClientByGoogleAuth(clientId, oneTimePasword), Times.Once);
+            }
+        }
+
+        [TestMethod]
+        public void ConfirmSession_False_ShouldReturnFalse()
+        {
+            SessionRepository.Invocations.Clear();
+            ClientService.Invocations.Clear();
+
+            var id = Guid.NewGuid();
+            var clientId = Guid.NewGuid();
+            var oneTimePasword = "12345678";
+
+            SessionRepository.Setup(x => x.ConfirmSession(clientId, id)).Returns(false);
+            ClientService.Setup(x => x.ValidateClientByGoogleAuth(clientId, oneTimePasword)).Returns(true);
+
+            var service = new SessionService(SessionRepository.Object, ClientService.Object);
+
+            var result = service.ConfirmSession(clientId, id, oneTimePasword);
+
+            SessionRepository.Verify(x => x.ConfirmSession(clientId, id), Times.Once);
+            ClientService.Verify(x => x.ValidateClientByGoogleAuth(clientId, oneTimePasword), Times.Once);
+            Assert.AreEqual(result, false);
+        }
+
+        [TestMethod]
         public void IsSessionConfirmRequired_SessionExistAndConfirm_ShouldReturnFalse()
         {
             SessionRepository.Invocations.Clear();

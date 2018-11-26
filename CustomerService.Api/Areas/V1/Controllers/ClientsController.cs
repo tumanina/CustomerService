@@ -146,6 +146,86 @@ namespace CustomerService.Api.Areas.V1.Controllers
             }
         }
 
+        /// <summary>
+        /// Method for creating google auth code.
+        /// </summary>
+        /// <param name="Id">Client id</param>
+        /// <returns>Execution status (ОК/404/500).</returns>
+        // PUT api/clients/{id}/googleauth
+        [HttpPut("{id}/googleauth", Name = "CreateGoogleAuthCode")]
+        public IActionResult CreateGoogleAuthCode(Guid id)
+        {
+            try
+            {
+                var result = _clientService.CreateGoogleAuthCode(id);
+
+                if (result == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// Method for activate client google auth code.
+        /// </summary>
+        /// <param name="Id">Client id</param>
+        /// <param name="oneTimePassword">One Time Password (from GoogleAuth)</param>
+        /// <returns>Execution status (ОК/404/500).</returns>
+        // PUT api/clients/{id}/googleauth
+        [HttpPut("{id}/googleauth/activate", Name = "ActivateGoogleAuthCode")]
+        public IActionResult ActivateGoogleAuthCode(Guid id, [FromBody] string oneTimePassword)
+        {
+            try
+            {
+                var result = _clientService.SetGoogleAuthCode(id, oneTimePassword);
+
+                if (result == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// Method for deactivate client google auth code.
+        /// </summary>
+        /// <param name="Id">Client id</param>
+        /// <param name="oneTimePassword">One Time Password (from GoogleAuth)</param>
+        /// <returns>Execution status (ОК/404/500).</returns>
+        // PUT api/clients/{id}/googleauth
+        [HttpPut("{id}/googleauth/deactivate", Name = "DeactivateGoogleAuthCode")]
+        public IActionResult DeactivateGoogleAuthCode(Guid id, [FromBody] string oneTimePassword)
+        {
+            try
+            {
+                var result = _clientService.DeactivateGoogleAuthCode(id, oneTimePassword);
+
+                if (result == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+        }
+
         private bool ValidatePassword(string password)
         {
             var rgx = new Regex(@"^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{6,50}$");

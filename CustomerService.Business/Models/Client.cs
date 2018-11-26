@@ -15,6 +15,8 @@ namespace CustomerService.Business.Models
             IsActive = entity.IsActive;
             Email = entity.Email;
             Name = entity.Name;
+            GoogleAuthCode = entity.GoogleAuthCode;
+            GoogleAuthActive = entity.GoogleAuthActive;
             PasswordHash = entity.PasswordHash;
             ActivationCode = entity.ActivationCode;
             CreatedDate = entity.CreatedDate;
@@ -27,6 +29,8 @@ namespace CustomerService.Business.Models
         public string PasswordHash { get; set; }
         public string ActivationCode { get; set; }
         public bool IsActive { get; set; }
+        public string GoogleAuthCode { get; set; }
+        public bool? GoogleAuthActive { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime UpdatedDate { get; set; }
     }

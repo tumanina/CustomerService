@@ -4,6 +4,7 @@ using Moq;
 using CustomerService.Business;
 using CustomerService.Repositories;
 using ClientEntity = CustomerService.Repositories.Entities.Client;
+using CustomerService.Business.Models;
 
 namespace CustomerService.UnitTests.ServiceTests
 {
@@ -11,6 +12,7 @@ namespace CustomerService.UnitTests.ServiceTests
     public class ClientServiceTest
     {
         private static readonly Mock<IClientRepository> ClientRepository = new Mock<IClientRepository>();
+        private static readonly Mock<IGoogleAuthService> GoogleAuthService = new Mock<IGoogleAuthService>();
 
         [TestMethod]
         public void CheckNameAvailability_ClientWithNameExisted_ShouldReturnFalse()
@@ -28,7 +30,7 @@ namespace CustomerService.UnitTests.ServiceTests
 
             ClientRepository.Setup(x => x.GetClientByName(name)).Returns(client);
 
-            var service = new ClientService(ClientRepository.Object);
+            var service = new ClientService(ClientRepository.Object, GoogleAuthService.Object);
 
             var result = service.CheckNameAvailability(name);
 
@@ -45,7 +47,7 @@ namespace CustomerService.UnitTests.ServiceTests
 
             ClientRepository.Setup(x => x.GetClientByName(name)).Returns((ClientEntity) null);
 
-            var service = new ClientService(ClientRepository.Object);
+            var service = new ClientService(ClientRepository.Object, GoogleAuthService.Object);
 
             var result = service.CheckNameAvailability(name);
 
@@ -69,7 +71,7 @@ namespace CustomerService.UnitTests.ServiceTests
 
             ClientRepository.Setup(x => x.GetClientByEmail(email)).Returns(client);
 
-            var service = new ClientService(ClientRepository.Object);
+            var service = new ClientService(ClientRepository.Object, GoogleAuthService.Object);
 
             var result = service.CheckEmailAvailability(email);
 
@@ -86,7 +88,7 @@ namespace CustomerService.UnitTests.ServiceTests
 
             ClientRepository.Setup(x => x.GetClientByEmail(email)).Returns((ClientEntity)null);
 
-            var service = new ClientService(ClientRepository.Object);
+            var service = new ClientService(ClientRepository.Object, GoogleAuthService.Object);
 
             var result = service.CheckEmailAvailability(email);
 
@@ -106,15 +108,15 @@ namespace CustomerService.UnitTests.ServiceTests
             var googleAuthCode = "sfdfgdgdfhd";
             var passwordHashed = "IqDoAwygKB2+M2hvzo/jCo192s+8POSDW8uO+QWhhiE=";
 
-            ClientRepository.Setup(x => x.GetClientByName(name)).Returns(new ClientEntity { Id = clientId, Name = name, IsActive = isActive, PasswordHash = passwordHashed } );
+            ClientRepository.Setup(x => x.GetClientByName(name)).Returns(new ClientEntity { Id = clientId, Name = name, GoogleAuthCode = googleAuthCode, IsActive = isActive, PasswordHash = passwordHashed });
 
-            var service = new ClientService(ClientRepository.Object);
-
+            var service = new ClientService(ClientRepository.Object, GoogleAuthService.Object);
             var result = service.Authentification(name, password);
 
             ClientRepository.Verify(x => x.GetClientByName(name), Times.Once);
             Assert.AreEqual(result.Id, clientId);
             Assert.AreEqual(result.Name, name);
+            Assert.AreEqual(result.GoogleAuthCode, googleAuthCode);
             Assert.AreEqual(result.IsActive, isActive);
         }
 
@@ -128,7 +130,7 @@ namespace CustomerService.UnitTests.ServiceTests
 
             ClientRepository.Setup(x => x.GetClientByName(name)).Returns((ClientEntity) null);
 
-            var service = new ClientService(ClientRepository.Object);
+            var service = new ClientService(ClientRepository.Object, GoogleAuthService.Object);
 
             var result = service.Authentification(name, password);
 
@@ -148,14 +150,130 @@ namespace CustomerService.UnitTests.ServiceTests
             var googleAuthCode = "sfdfgdgdfhd";
             var passwordHashed = "IqDoAwygKB2+M2hvzo/";
 
-            ClientRepository.Setup(x => x.GetClientByName(name)).Returns(new ClientEntity { Id = clientId, Name = name, IsActive = isActive, PasswordHash = passwordHashed });
+            ClientRepository.Setup(x => x.GetClientByName(name)).Returns(new ClientEntity { Id = clientId, Name = name, GoogleAuthCode = googleAuthCode, IsActive = isActive, PasswordHash = passwordHashed });
 
-            var service = new ClientService(ClientRepository.Object);
+            var service = new ClientService(ClientRepository.Object, GoogleAuthService.Object);
 
             var result = service.Authentification(name, password);
 
             ClientRepository.Verify(x => x.GetClientByName(name), Times.Once);
             Assert.AreEqual(result, null);
+        }
+
+        [TestMethod]
+        public void ValidateClientByGoogleAuth_ClientExistedAuthCodeIsValid_ShouldReturnTrue()
+        {
+            ClientRepository.Invocations.Clear();
+            GoogleAuthService.Invocations.Clear();
+
+            var clientId = Guid.NewGuid();
+            var name = "test";
+            var oneTimePassword = "123654";
+            var isActive = true;
+            var googleAuthCode = "sfdfgdgdfhd";
+            var passwordHashed = "IqDoAwygKB2+M2hvzo/";
+
+            ClientRepository.Setup(x => x.GetClient(clientId)).Returns(new ClientEntity { Id = clientId, Name = name, GoogleAuthCode = googleAuthCode, GoogleAuthActive = true, IsActive = isActive, PasswordHash = passwordHashed });
+            GoogleAuthService.Setup(x => x.Validate(googleAuthCode, oneTimePassword)).Returns(true);
+
+            var service = new ClientService(ClientRepository.Object, GoogleAuthService.Object);
+            var result = service.ValidateClientByGoogleAuth(clientId, oneTimePassword);
+
+            ClientRepository.Verify(x => x.GetClient(clientId), Times.Once);
+            GoogleAuthService.Verify(x => x.Validate(googleAuthCode, oneTimePassword), Times.Once);
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public void ValidateClientByGoogleAuth_ClientNotExisted_ShouldReturnNull()
+        {
+            ClientRepository.Invocations.Clear();
+            GoogleAuthService.Invocations.Clear();
+
+            var clientId = Guid.NewGuid();
+            var oneTimePassword = "123654";
+            var googleAuthCode = "sfdfgdgdfhd";
+
+            ClientRepository.Setup(x => x.GetClient(clientId)).Returns((ClientEntity)null);
+            GoogleAuthService.Setup(x => x.Validate(googleAuthCode, oneTimePassword)).Returns(true);
+
+            var service = new ClientService(ClientRepository.Object, GoogleAuthService.Object);
+            var result = service.ValidateClientByGoogleAuth(clientId, oneTimePassword);
+
+            ClientRepository.Verify(x => x.GetClient(clientId), Times.Once);
+            GoogleAuthService.Verify(x => x.Validate(googleAuthCode, oneTimePassword), Times.Never);
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public void ValidateClientByGoogleAuth_ClientExistedAuthCodeIsInvalid_ShouldReturnFalse()
+        {
+            ClientRepository.Invocations.Clear();
+            GoogleAuthService.Invocations.Clear();
+
+            var clientId = Guid.NewGuid();
+            var name = "test";
+            var oneTimePassword = "123654";
+            var isActive = true;
+            var googleAuthCode = "sfdfgdgdfhd";
+            var passwordHashed = "IqDoAwygKB2+M2hvzo/";
+
+            ClientRepository.Setup(x => x.GetClient(clientId)).Returns(new ClientEntity { Id = clientId, Name = name, GoogleAuthCode = googleAuthCode, GoogleAuthActive = true, IsActive = isActive, PasswordHash = passwordHashed });
+            GoogleAuthService.Setup(x => x.Validate(googleAuthCode, oneTimePassword)).Returns(false);
+
+            var service = new ClientService(ClientRepository.Object, GoogleAuthService.Object);
+            var result = service.ValidateClientByGoogleAuth(clientId, oneTimePassword);
+
+            ClientRepository.Verify(x => x.GetClient(clientId), Times.Once);
+            GoogleAuthService.Verify(x => x.Validate(googleAuthCode, oneTimePassword), Times.Once);
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public void ValidateClientByGoogleAuth_ClientExistedAuthCodeIsNullGoogleAuthInactive_ShouldReturnTrueNotCheckValid()
+        {
+            ClientRepository.Invocations.Clear();
+            GoogleAuthService.Invocations.Clear();
+
+            var clientId = Guid.NewGuid();
+            var name = "test";
+            var oneTimePassword = "123654";
+            var isActive = true;
+            var passwordHashed = "IqDoAwygKB2+M2hvzo/";
+
+            ClientRepository.Setup(x => x.GetClient(clientId)).Returns(new ClientEntity { Id = clientId, Name = name, GoogleAuthCode = null, GoogleAuthActive = false, IsActive = isActive, PasswordHash = passwordHashed });
+            GoogleAuthService.Setup(x => x.Validate(It.IsAny<string>(), oneTimePassword)).Returns(false);
+
+            var service = new ClientService(ClientRepository.Object, GoogleAuthService.Object);
+            var result = service.ValidateClientByGoogleAuth(clientId, oneTimePassword);
+
+            ClientRepository.Verify(x => x.GetClient(clientId), Times.Once);
+            GoogleAuthService.Verify(x => x.Validate(It.IsAny<string>(), oneTimePassword), Times.Never);
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public void ValidateClientByGoogleAuth_ClientExistedAuthCodeIsNotNullAndInvalidGoogleAuthInactive_ShouldReturnFalse()
+        {
+            ClientRepository.Invocations.Clear();
+            GoogleAuthService.Invocations.Clear();
+
+            var clientId = Guid.NewGuid();
+            var name = "test";
+            var oneTimePassword = "123654";
+            var isActive = true;
+            var googleAuthCode = "sfdfgdgdfhd";
+            var passwordHashed = "IqDoAwygKB2+M2hvzo/";
+
+            ClientRepository.Setup(x => x.GetClient(clientId)).Returns(new ClientEntity { Id = clientId, Name = name, GoogleAuthCode = googleAuthCode, GoogleAuthActive = false, IsActive = isActive, PasswordHash = passwordHashed });
+            GoogleAuthService.Setup(x => x.Validate(googleAuthCode, oneTimePassword)).Returns(false);
+
+            var service = new ClientService(ClientRepository.Object, GoogleAuthService.Object);
+            var result = service.ValidateClientByGoogleAuth(clientId, oneTimePassword);
+
+            ClientRepository.Verify(x => x.GetClient(clientId), Times.Once);
+            GoogleAuthService.Verify(x => x.Validate(googleAuthCode, oneTimePassword), Times.Once);
+            Assert.IsFalse(result);
         }
 
         [TestMethod]
@@ -179,7 +297,7 @@ namespace CustomerService.UnitTests.ServiceTests
 
             ClientRepository.Setup(x => x.CreateClient(email, name, It.IsAny<string>(), It.IsAny<string>())).Returns(client);
 
-            var service = new ClientService(ClientRepository.Object);
+            var service = new ClientService(ClientRepository.Object, GoogleAuthService.Object);
 
             var result = service.CreateClient(email, name, password);
 
@@ -200,7 +318,7 @@ namespace CustomerService.UnitTests.ServiceTests
 
             ClientRepository.Setup(x => x.CreateClient(email, Name, It.IsAny<string>(), It.IsAny<string>())).Returns((ClientEntity)null);
 
-            var service = new ClientService(ClientRepository.Object);
+            var service = new ClientService(ClientRepository.Object, GoogleAuthService.Object);
 
             var result = service.CreateClient(email, Name, password);
 
@@ -217,12 +335,128 @@ namespace CustomerService.UnitTests.ServiceTests
 
             ClientRepository.Setup(x => x.ActivateClient(activationCode)).Returns(true);
 
-            var service = new ClientService(ClientRepository.Object);
+            var service = new ClientService(ClientRepository.Object, GoogleAuthService.Object);
 
             var result = service.ActivateClient(activationCode);
 
             ClientRepository.Verify(x => x.ActivateClient(activationCode), Times.Once);
             Assert.AreEqual(result, true);
+        }
+
+        [TestMethod]
+        public void CreateGoogleAuthCode_ClientExistedAndHaveNotGoogleCode_ShouldReturnGoogleAuthCode()
+        {
+            ClientRepository.Invocations.Clear();
+            GoogleAuthService.Invocations.Clear();
+
+            var clientId = Guid.NewGuid();
+            var name = "test";
+            var email = "test@mail.ru";
+            var isActive = true;
+            var qrCodeImageUrl = "someurl.com/test";
+            var setupCode = "sfgsdg34rfs";
+
+            ClientRepository.Setup(x => x.GetClient(clientId)).Returns(new ClientEntity { Id = clientId, Name = name, Email = email, IsActive = isActive });
+            ClientRepository.Setup(x => x.UpdateGoogleAuthCode(clientId, It.IsAny<string>())).Returns(true);
+            GoogleAuthService.Setup(x => x.Generate(email, It.IsAny<string>())).Returns(new GoogleAuthCode { QRCodeImageUrl = qrCodeImageUrl, SetupCode = setupCode });
+
+            var service = new ClientService(ClientRepository.Object, GoogleAuthService.Object);
+
+            var result = service.CreateGoogleAuthCode(clientId);
+
+            ClientRepository.Verify(x => x.GetClient(clientId), Times.Once);
+            ClientRepository.Verify(x => x.UpdateGoogleAuthCode(clientId, It.IsAny<string>()), Times.Once);
+            GoogleAuthService.Verify(x => x.Generate(email, It.IsAny<string>()), Times.Once);
+            Assert.AreEqual(result.QRCodeImageUrl, qrCodeImageUrl);
+            Assert.AreEqual(result.SetupCode, setupCode);
+        }
+
+        [TestMethod]
+        public void CreateGoogleAuthCode_ClientExistedAndHaveInactiveGoogleCode_ShouldNotGenerateCodeAndShouldReturnException()
+        {
+            ClientRepository.Invocations.Clear();
+            GoogleAuthService.Invocations.Clear();
+
+            var clientId = Guid.NewGuid();
+            var name = "test";
+            var email = "test@mail.ru";
+            var isActive = true;
+            var googleAuthCode = "sfdfgdgdfhd";
+            var qrCodeImageUrl = "someurl.com/test";
+            var setupCode = "sfgsdg34rfs";
+
+            ClientRepository.Setup(x => x.GetClient(clientId)).Returns(new ClientEntity { Id = clientId, Name = name, Email = email, GoogleAuthCode = googleAuthCode, GoogleAuthActive = false, IsActive = isActive });
+            ClientRepository.Setup(x => x.UpdateGoogleAuthCode(clientId, It.IsAny<string>())).Returns(true);
+            GoogleAuthService.Setup(x => x.Generate(email, It.IsAny<string>())).Returns(new GoogleAuthCode { QRCodeImageUrl = qrCodeImageUrl, SetupCode = setupCode });
+
+            var service = new ClientService(ClientRepository.Object, GoogleAuthService.Object);
+
+            var result = service.CreateGoogleAuthCode(clientId);
+
+            ClientRepository.Verify(x => x.GetClient(clientId), Times.Once);
+            GoogleAuthService.Verify(x => x.Generate(email, It.IsAny<string>()), Times.Once);
+            ClientRepository.Verify(x => x.UpdateGoogleAuthCode(clientId, It.IsAny<string>()), Times.Once);
+            Assert.AreEqual(result.QRCodeImageUrl, qrCodeImageUrl);
+            Assert.AreEqual(result.SetupCode, setupCode);
+        }
+
+        [TestMethod]
+        public void CreateGoogleAuthCode_ClientExistedAndHaveActiveGoogleCode_ShouldNotGenerateCodeAndShouldReturnException()
+        {
+            ClientRepository.Invocations.Clear();
+            GoogleAuthService.Invocations.Clear();
+
+            var clientId = Guid.NewGuid();
+            var name = "test";
+            var email = "test@mail.ru";
+            var isActive = true;
+            var googleAuthCode = "sfdfgdgdfhd";
+            var qrCodeImageUrl = "someurl.com/test";
+            var setupCode = "sfgsdg34rfs";
+
+            ClientRepository.Setup(x => x.GetClient(clientId)).Returns(new ClientEntity { Id = clientId, Name = name, Email = email, GoogleAuthCode = googleAuthCode, GoogleAuthActive = true, IsActive = isActive });
+            ClientRepository.Setup(x => x.UpdateGoogleAuthCode(clientId, It.IsAny<string>())).Returns(true);
+            GoogleAuthService.Setup(x => x.Generate(email, It.IsAny<string>())).Returns(new GoogleAuthCode { QRCodeImageUrl = qrCodeImageUrl, SetupCode = setupCode });
+
+            var service = new ClientService(ClientRepository.Object, GoogleAuthService.Object);
+
+            try
+            {
+                var result = service.CreateGoogleAuthCode(clientId);
+                Assert.Fail();
+            }
+            catch (Exception ex)
+            {
+                Assert.AreEqual(ex.Message, "Client already has active GoogleAuthCode.");
+                ClientRepository.Verify(x => x.GetClient(clientId), Times.Once);
+                ClientRepository.Verify(x => x.UpdateGoogleAuthCode(clientId, It.IsAny<string>()), Times.Never);
+                GoogleAuthService.Verify(x => x.Generate(email, It.IsAny<string>()), Times.Never);
+            }
+        }
+
+        [TestMethod]
+        public void CreateGoogleAuthCode_ClientNotExisted_ShouldReturnNull()
+        {
+            ClientRepository.Invocations.Clear();
+            GoogleAuthService.Invocations.Clear();
+
+            var clientId = Guid.NewGuid();
+            var email = "test@mail.ru";
+            var qrCodeImageUrl = "someurl.com/test";
+            var setupCode = "sfgsdg34rfs";
+
+            ClientRepository.Setup(x => x.GetClient(clientId)).Returns((ClientEntity)null);
+            ClientRepository.Setup(x => x.UpdateGoogleAuthCode(clientId, It.IsAny<string>())).Returns(true);
+            GoogleAuthService.Setup(x => x.Generate(email, It.IsAny<string>())).Returns(new GoogleAuthCode { QRCodeImageUrl = qrCodeImageUrl, SetupCode = setupCode });
+
+            var service = new ClientService(ClientRepository.Object, GoogleAuthService.Object);
+
+            var result = service.CreateGoogleAuthCode(clientId);
+
+            ClientRepository.Verify(x => x.GetClient(clientId), Times.Once);
+            ClientRepository.Verify(x => x.UpdateGoogleAuthCode(clientId, It.IsAny<string>()), Times.Never);
+            GoogleAuthService.Verify(x => x.Generate(email, It.IsAny<string>()), Times.Never);
+            Assert.AreEqual(result, null);
         }
     }
 }

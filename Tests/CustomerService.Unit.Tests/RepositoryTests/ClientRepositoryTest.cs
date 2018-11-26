@@ -365,5 +365,300 @@ namespace CustomerService.UnitTests.RepositoryTests
             CustomerDBContext.Verify(x => x.Client, Times.Exactly(1));
             CustomerDBContext.Verify(x => x.SaveChanges(), Times.Never);
         }
+
+
+        [TestMethod]
+        public void UpdateGoogleAuthCode_ClientExisted_UseDbContextSaveReturnTrue()
+        {
+            CustomerDBContext.Invocations.Clear();
+
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+            var email1 = "email1@mail.ru";
+            var email2 = "email2@mail.ru";
+            var name1 = "name1";
+            var name2 = "name2";
+            var passwordHashed1 = "542gythnfsli8";
+            var passwordHashed2 = "111gythnfsli8";
+            var activationCode1 = "12345qwerty78906yuiopsdfg";
+            var activationCode2 = "56789qwerty78906yuiopsdfg";
+            var createDate1 = DateTime.UtcNow.AddDays(-1);
+            var createDate2 = DateTime.UtcNow.AddDays(-2);
+            var updateDate1 = DateTime.UtcNow.AddMinutes(-3);
+            var updateDate2 = DateTime.UtcNow.AddMinutes(-6);
+            var authCode1 = Guid.NewGuid().ToString();
+            var authCode2 = Guid.NewGuid().ToString();
+            var authCode3 = Guid.NewGuid().ToString();
+
+            var data = new List<Client>
+            {
+                new Client { Id = id1, Name = name1, Email = email1, PasswordHash = passwordHashed1, ActivationCode = activationCode1, CreatedDate = createDate1, UpdatedDate = updateDate1, IsActive = true, GoogleAuthCode = authCode1 },
+                new Client { Id = id2, Name = name2, Email = email2, PasswordHash = passwordHashed2, ActivationCode = activationCode2, CreatedDate = createDate2, UpdatedDate = updateDate2, IsActive = true, GoogleAuthCode = authCode2 }
+            }.AsQueryable();
+
+            var mockSet = new Mock<DbSet<Client>>();
+
+            mockSet.As<IQueryable<Client>>().Setup(m => m.Provider).Returns(data.Provider);
+            mockSet.As<IQueryable<Client>>().Setup(m => m.Expression).Returns(data.Expression);
+            mockSet.As<IQueryable<Client>>().Setup(m => m.ElementType).Returns(data.ElementType);
+            mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
+            mockSet.Setup(m => m.Add(It.IsAny<Client>()));
+
+            CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
+            CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
+            CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
+            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
+
+            var repository = new ClientRepository(CustomerDBContextFactory.Object);
+
+            var result = repository.UpdateGoogleAuthCode(id2, authCode3);
+
+            Assert.IsTrue(result);
+            CustomerDBContext.Verify(x => x.Client, Times.Exactly(1));
+            CustomerDBContext.Verify(x => x.SaveChanges(), Times.Once);
+        }
+
+        [TestMethod]
+        public void UpdateGoogleAuthCode_ClientNotExisted_UseDbContextReturnFalse()
+        {
+            CustomerDBContext.Invocations.Clear();
+
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+            var email1 = "email1@mail.ru";
+            var email2 = "email2@mail.ru";
+            var name1 = "name1";
+            var name2 = "name2";
+            var passwordHashed1 = "542gythnfsli8";
+            var passwordHashed2 = "111gythnfsli8";
+            var activationCode1 = "12345qwerty78906yuiopsdfg";
+            var activationCode2 = "56789qwerty78906yuiopsdfg";
+            var createDate1 = DateTime.UtcNow.AddDays(-1);
+            var createDate2 = DateTime.UtcNow.AddDays(-2);
+            var updateDate1 = DateTime.UtcNow.AddMinutes(-3);
+            var updateDate2 = DateTime.UtcNow.AddMinutes(-6);
+            var authCode1 = Guid.NewGuid().ToString();
+            var authCode2 = Guid.NewGuid().ToString();
+            var authCode3 = Guid.NewGuid().ToString();
+
+            var data = new List<Client>
+            {
+                new Client { Id = id1, Name = name1, Email = email1, PasswordHash = passwordHashed1, ActivationCode = activationCode1, CreatedDate = createDate1, UpdatedDate = updateDate1, IsActive = true, GoogleAuthCode = authCode1 },
+                new Client { Id = id2, Name = name2, Email = email2, PasswordHash = passwordHashed2, ActivationCode = activationCode2, CreatedDate = createDate2, UpdatedDate = updateDate2, IsActive = true, GoogleAuthCode = authCode2 }
+            }.AsQueryable();
+
+            var mockSet = new Mock<DbSet<Client>>();
+
+            mockSet.As<IQueryable<Client>>().Setup(m => m.Provider).Returns(data.Provider);
+            mockSet.As<IQueryable<Client>>().Setup(m => m.Expression).Returns(data.Expression);
+            mockSet.As<IQueryable<Client>>().Setup(m => m.ElementType).Returns(data.ElementType);
+            mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
+            mockSet.Setup(m => m.Add(It.IsAny<Client>()));
+
+            CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
+            CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
+            CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
+            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
+
+            var repository = new ClientRepository(CustomerDBContextFactory.Object);
+
+            var result = repository.UpdateGoogleAuthCode(Guid.NewGuid(), authCode3);
+
+            Assert.IsTrue(result == false);
+            CustomerDBContext.Verify(x => x.Client, Times.Exactly(1));
+            CustomerDBContext.Verify(x => x.SaveChanges(), Times.Never);
+        }
+
+        [TestMethod]
+        public void ActivateGoogleAuthCode_ClientExisted_UseDbContextSaveReturnTrue()
+        {
+            CustomerDBContext.Invocations.Clear();
+
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+            var email1 = "email1@mail.ru";
+            var email2 = "email2@mail.ru";
+            var name1 = "name1";
+            var name2 = "name2";
+            var passwordHashed1 = "542gythnfsli8";
+            var passwordHashed2 = "111gythnfsli8";
+            var activationCode1 = "12345qwerty78906yuiopsdfg";
+            var activationCode2 = "56789qwerty78906yuiopsdfg";
+            var createDate1 = DateTime.UtcNow.AddDays(-1);
+            var createDate2 = DateTime.UtcNow.AddDays(-2);
+            var updateDate1 = DateTime.UtcNow.AddMinutes(-3);
+            var updateDate2 = DateTime.UtcNow.AddMinutes(-6);
+
+            var data = new List<Client>
+            {
+                new Client { Id = id1, Name = name1, Email = email1, PasswordHash = passwordHashed1, ActivationCode = activationCode1, CreatedDate = createDate1, UpdatedDate = updateDate1, IsActive = true, GoogleAuthActive = false },
+                new Client { Id = id2, Name = name2, Email = email2, PasswordHash = passwordHashed2, ActivationCode = activationCode2, CreatedDate = createDate2, UpdatedDate = updateDate2, IsActive = true, GoogleAuthActive = false }
+            }.AsQueryable();
+
+            var mockSet = new Mock<DbSet<Client>>();
+
+            mockSet.As<IQueryable<Client>>().Setup(m => m.Provider).Returns(data.Provider);
+            mockSet.As<IQueryable<Client>>().Setup(m => m.Expression).Returns(data.Expression);
+            mockSet.As<IQueryable<Client>>().Setup(m => m.ElementType).Returns(data.ElementType);
+            mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
+            mockSet.Setup(m => m.Add(It.IsAny<Client>()));
+
+            CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
+            CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
+            CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
+            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
+
+            var repository = new ClientRepository(CustomerDBContextFactory.Object);
+
+            var result = repository.ActivateGoogleAuthCode(id2);
+
+            Assert.IsTrue(result);
+            CustomerDBContext.Verify(x => x.Client, Times.Exactly(1));
+            CustomerDBContext.Verify(x => x.SaveChanges(), Times.Once);
+        }
+
+        [TestMethod]
+        public void ActivateGoogleAuthCode_ClientNotExisted_UseDbContextReturnFalse()
+        {
+            CustomerDBContext.Invocations.Clear();
+
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+            var email1 = "email1@mail.ru";
+            var email2 = "email2@mail.ru";
+            var name1 = "name1";
+            var name2 = "name2";
+            var passwordHashed1 = "542gythnfsli8";
+            var passwordHashed2 = "111gythnfsli8";
+            var activationCode1 = "12345qwerty78906yuiopsdfg";
+            var activationCode2 = "56789qwerty78906yuiopsdfg";
+            var createDate1 = DateTime.UtcNow.AddDays(-1);
+            var createDate2 = DateTime.UtcNow.AddDays(-2);
+            var updateDate1 = DateTime.UtcNow.AddMinutes(-3);
+            var updateDate2 = DateTime.UtcNow.AddMinutes(-6);
+
+            var data = new List<Client>
+            {
+                new Client { Id = id1, Name = name1, Email = email1, PasswordHash = passwordHashed1, ActivationCode = activationCode1, CreatedDate = createDate1, UpdatedDate = updateDate1, IsActive = true, GoogleAuthActive = false },
+                new Client { Id = id2, Name = name2, Email = email2, PasswordHash = passwordHashed2, ActivationCode = activationCode2, CreatedDate = createDate2, UpdatedDate = updateDate2, IsActive = true, GoogleAuthActive = false }
+            }.AsQueryable();
+
+            var mockSet = new Mock<DbSet<Client>>();
+
+            mockSet.As<IQueryable<Client>>().Setup(m => m.Provider).Returns(data.Provider);
+            mockSet.As<IQueryable<Client>>().Setup(m => m.Expression).Returns(data.Expression);
+            mockSet.As<IQueryable<Client>>().Setup(m => m.ElementType).Returns(data.ElementType);
+            mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
+            mockSet.Setup(m => m.Add(It.IsAny<Client>()));
+
+            CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
+            CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
+            CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
+            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
+
+            var repository = new ClientRepository(CustomerDBContextFactory.Object);
+
+            var result = repository.ActivateGoogleAuthCode(Guid.NewGuid());
+
+            Assert.IsTrue(result == false);
+            CustomerDBContext.Verify(x => x.Client, Times.Exactly(1));
+            CustomerDBContext.Verify(x => x.SaveChanges(), Times.Never);
+        }
+
+        [TestMethod]
+        public void DeactivateGoogleAuthCode_ClientExisted_UseDbContextSaveReturnTrue()
+        {
+            CustomerDBContext.Invocations.Clear();
+
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+            var email1 = "email1@mail.ru";
+            var email2 = "email2@mail.ru";
+            var name1 = "name1";
+            var name2 = "name2";
+            var passwordHashed1 = "542gythnfsli8";
+            var passwordHashed2 = "111gythnfsli8";
+            var activationCode1 = "12345qwerty78906yuiopsdfg";
+            var activationCode2 = "56789qwerty78906yuiopsdfg";
+            var createDate1 = DateTime.UtcNow.AddDays(-1);
+            var createDate2 = DateTime.UtcNow.AddDays(-2);
+            var updateDate1 = DateTime.UtcNow.AddMinutes(-3);
+            var updateDate2 = DateTime.UtcNow.AddMinutes(-6);
+
+            var data = new List<Client>
+            {
+                new Client { Id = id1, Name = name1, Email = email1, PasswordHash = passwordHashed1, ActivationCode = activationCode1, CreatedDate = createDate1, UpdatedDate = updateDate1, IsActive = true, GoogleAuthActive = false },
+                new Client { Id = id2, Name = name2, Email = email2, PasswordHash = passwordHashed2, ActivationCode = activationCode2, CreatedDate = createDate2, UpdatedDate = updateDate2, IsActive = true, GoogleAuthActive = false }
+            }.AsQueryable();
+
+            var mockSet = new Mock<DbSet<Client>>();
+
+            mockSet.As<IQueryable<Client>>().Setup(m => m.Provider).Returns(data.Provider);
+            mockSet.As<IQueryable<Client>>().Setup(m => m.Expression).Returns(data.Expression);
+            mockSet.As<IQueryable<Client>>().Setup(m => m.ElementType).Returns(data.ElementType);
+            mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
+            mockSet.Setup(m => m.Add(It.IsAny<Client>()));
+
+            CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
+            CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
+            CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
+            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
+
+            var repository = new ClientRepository(CustomerDBContextFactory.Object);
+
+            var result = repository.DeactivateGoogleAuthCode(id2);
+
+            Assert.IsTrue(result);
+            CustomerDBContext.Verify(x => x.Client, Times.Exactly(1));
+            CustomerDBContext.Verify(x => x.SaveChanges(), Times.Once);
+        }
+
+        [TestMethod]
+        public void DeactivateGoogleAuthCode_ClientNotExisted_UseDbContextReturnFalse()
+        {
+            CustomerDBContext.Invocations.Clear();
+
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+            var email1 = "email1@mail.ru";
+            var email2 = "email2@mail.ru";
+            var name1 = "name1";
+            var name2 = "name2";
+            var passwordHashed1 = "542gythnfsli8";
+            var passwordHashed2 = "111gythnfsli8";
+            var activationCode1 = "12345qwerty78906yuiopsdfg";
+            var activationCode2 = "56789qwerty78906yuiopsdfg";
+            var createDate1 = DateTime.UtcNow.AddDays(-1);
+            var createDate2 = DateTime.UtcNow.AddDays(-2);
+            var updateDate1 = DateTime.UtcNow.AddMinutes(-3);
+            var updateDate2 = DateTime.UtcNow.AddMinutes(-6);
+
+            var data = new List<Client>
+            {
+                new Client { Id = id1, Name = name1, Email = email1, PasswordHash = passwordHashed1, ActivationCode = activationCode1, CreatedDate = createDate1, UpdatedDate = updateDate1, IsActive = true, GoogleAuthActive = false },
+                new Client { Id = id2, Name = name2, Email = email2, PasswordHash = passwordHashed2, ActivationCode = activationCode2, CreatedDate = createDate2, UpdatedDate = updateDate2, IsActive = true, GoogleAuthActive = false }
+            }.AsQueryable();
+
+            var mockSet = new Mock<DbSet<Client>>();
+
+            mockSet.As<IQueryable<Client>>().Setup(m => m.Provider).Returns(data.Provider);
+            mockSet.As<IQueryable<Client>>().Setup(m => m.Expression).Returns(data.Expression);
+            mockSet.As<IQueryable<Client>>().Setup(m => m.ElementType).Returns(data.ElementType);
+            mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
+            mockSet.Setup(m => m.Add(It.IsAny<Client>()));
+
+            CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
+            CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
+            CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
+            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
+
+            var repository = new ClientRepository(CustomerDBContextFactory.Object);
+
+            var result = repository.DeactivateGoogleAuthCode(Guid.NewGuid());
+
+            Assert.IsTrue(result == false);
+            CustomerDBContext.Verify(x => x.Client, Times.Exactly(1));
+            CustomerDBContext.Verify(x => x.SaveChanges(), Times.Never);
+        }
     }
 }

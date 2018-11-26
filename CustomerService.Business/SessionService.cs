@@ -54,14 +54,23 @@ namespace CustomerService.Business
                 return null;
             }
 
-            var createdSession = _sessionRepository.CreateSession(client.Id, ip, interval, confirmed: true);
+            var confirmed = (client.GoogleAuthCode == null);
+
+            var createdSession = _sessionRepository.CreateSession(client.Id, ip, interval, confirmed);
 
             return createdSession == null ? null : new Session(createdSession);
         }
 
         public bool ConfirmSession(Guid clientId, Guid sessionId, string oneTimePassword)
         {
-            return _sessionRepository.ConfirmSession(clientId, sessionId);
+            var isCorrectPIN = _clientService.ValidateClientByGoogleAuth(clientId, oneTimePassword);
+
+            if (isCorrectPIN)
+            {
+                return _sessionRepository.ConfirmSession(clientId, sessionId);
+            }
+
+            return false;
         }
 
         public bool DisableSession(Guid clientId, Guid sessionId)

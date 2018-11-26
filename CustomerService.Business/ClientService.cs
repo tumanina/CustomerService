@@ -9,16 +9,17 @@ namespace CustomerService.Business
     public class ClientService : IClientService
     {
         private readonly IClientRepository _clientRepository;
+        private readonly IGoogleAuthService _googleAuthService;
 
-        public ClientService(IClientRepository ClientRepository)
+        public ClientService(IClientRepository ClientRepository, IGoogleAuthService googleAuthService)
         {
             _clientRepository = ClientRepository;
+            _googleAuthService = googleAuthService;
         }
 
         public Client GetClient(Guid id)
         {
             var client = _clientRepository.GetClient(id);
-
             if (client == null)
             {
                 return null;
@@ -30,12 +31,10 @@ namespace CustomerService.Business
         public Client Authentification(string name, string password)
         {
             var client = _clientRepository.GetClientByName(name);
-
             if (client == null || !client.IsActive)
             {
                 return null;
             }
-
             if (client.PasswordHash != BuildPasswordHash(password))
             {
                 return null;
@@ -47,14 +46,12 @@ namespace CustomerService.Business
         public bool CheckNameAvailability(string name)
         {
             var client = _clientRepository.GetClientByName(name);
-
             return (client == null) ? true : false;
         }
 
         public bool CheckEmailAvailability(string email)
         {
             var client = _clientRepository.GetClientByEmail(email);
-
             return (client == null) ? true : false;
         }
 
@@ -62,11 +59,8 @@ namespace CustomerService.Business
         public Client CreateClient(string email, string name, string password)
         {
             var activationCode = GenerateCode(24);
-
             var hashedPassword = BuildPasswordHash(password);
-
             var createdClient = _clientRepository.CreateClient(email, name, hashedPassword, activationCode);
-
             if (createdClient == null)
             {
                 return null;
@@ -83,8 +77,88 @@ namespace CustomerService.Business
         public Client UpdateClient(Guid id, string email, string ClientName)
         {
             var updatedClient = _clientRepository.UpdateClient(id, email, ClientName);
-
             return updatedClient == null ? null : new Client(updatedClient);
+        }
+
+        public bool ValidateClientByGoogleAuth(Guid id, string oneTimePassword)
+        {
+            var client = _clientRepository.GetClient(id);
+            if (client == null)
+            {
+                return false;
+            }
+            if ((!client.GoogleAuthActive.HasValue || !client.GoogleAuthActive.Value) && client.GoogleAuthCode == null)
+            {
+                return true;
+            }
+
+            return _googleAuthService.Validate(client.GoogleAuthCode, oneTimePassword);
+        }
+
+        public GoogleAuthCode CreateGoogleAuthCode(Guid id)
+        {
+            var client = _clientRepository.GetClient(id);
+            if (client == null)
+            {
+                return null;
+            }
+
+            if (!string.IsNullOrEmpty(client.GoogleAuthCode) && client.GoogleAuthActive == true)
+            {
+                throw new Exception("Client already has active GoogleAuthCode.");
+            }
+
+            var authCode = GenerateCode(26);
+            var code = _googleAuthService.Generate(client.Email, authCode);
+
+            if (code != null)
+            {
+                _clientRepository.UpdateGoogleAuthCode(id, authCode);
+            }
+
+            return code;
+        }
+
+        public bool? SetGoogleAuthCode(Guid id, string oneTimePassword)
+        {
+            var client = _clientRepository.GetClient(id);
+            if (client == null)
+            {
+                return null;
+            }
+            if (client.GoogleAuthActive == true)
+            {
+                return false;
+            }
+
+            bool isCorrectPIN = _googleAuthService.Validate(client.GoogleAuthCode, oneTimePassword);
+            if (!isCorrectPIN)
+            {
+                throw new Exception("Password invalid.");
+            }
+
+            return _clientRepository.ActivateGoogleAuthCode(id);
+        }
+
+        public bool? DeactivateGoogleAuthCode(Guid id, string oneTimePassword)
+        {
+            var client = _clientRepository.GetClient(id);
+            if (client == null)
+            {
+                return null;
+            }
+            if (!client.GoogleAuthActive.HasValue || client.GoogleAuthActive == false)
+            {
+                return false;
+            }
+
+            bool isCorrectPIN = _googleAuthService.Validate(client.GoogleAuthCode, oneTimePassword);
+            if (!isCorrectPIN)
+            {
+                throw new Exception("Password invalid.");
+            }
+
+            return _clientRepository.DeactivateGoogleAuthCode(id);
         }
 
         private string GenerateCode(int len)

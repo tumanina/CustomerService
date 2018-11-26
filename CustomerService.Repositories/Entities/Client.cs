@@ -10,6 +10,8 @@ namespace CustomerService.Repositories.Entities
         public string PasswordHash { get; set; }
         public string ActivationCode { get; set; }
         public bool IsActive { get; set; }
+        public string GoogleAuthCode { get; set; }
+        public bool? GoogleAuthActive { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime UpdatedDate { get; set; }
     }
