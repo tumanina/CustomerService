@@ -19,7 +19,7 @@ namespace CustomerService.Repositories
         {
             using (var context = _factory.CreateDBContext())
             {
-                return context.Session.Where(t => t.ClientId == clientId).ToList();
+                return context.Session.Where(t => t.ClientId == clientId && (!onlyActive || (t.Enabled && t.ExpiredDate > DateTime.UtcNow))).ToList();
             }
         }
 

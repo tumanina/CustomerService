@@ -122,7 +122,10 @@ namespace CustomerService.UnitTests.ControllerTests
 
             TokenService.Setup(x => x.CreateToken(clientId, ip, authMethod)).Returns(token);
 
-            var controller = new TokensController(TokenService.Object, Logger.Object);
+            var controller = new TokensController(TokenService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
 
             controller.ControllerContext.HttpContext.Request.Scheme = "http";
             controller.ControllerContext.HttpContext.Request.Host = new HostString("someurl.com", 72001);
@@ -157,7 +160,10 @@ namespace CustomerService.UnitTests.ControllerTests
 
             TokenService.Setup(x => x.CreateToken(clientId, ip, authMethod)).Returns(token);
 
-            var controller = new TokensController(TokenService.Object, Logger.Object);
+            var controller = new TokensController(TokenService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
 
             controller.ControllerContext.HttpContext.Request.Scheme = "http";
             controller.ControllerContext.HttpContext.Request.Host = new HostString("someurl.com", 72001);
@@ -257,7 +263,10 @@ namespace CustomerService.UnitTests.ControllerTests
 
             TokenService.Setup(x => x.CreateToken(clientId, ip, authMethod)).Returns((Token) null);
 
-            var controller = new TokensController(TokenService.Object, Logger.Object);
+            var controller = new TokensController(TokenService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
 
             controller.ControllerContext.HttpContext.Request.Scheme = "http";
             controller.ControllerContext.HttpContext.Request.Host = new HostString("someurl.com", 72001);
@@ -290,7 +299,10 @@ namespace CustomerService.UnitTests.ControllerTests
             var exceptionMessage = "any exception message";
             TokenService.Setup(x => x.CreateToken(clientId, ip, authMethod)).Throws(new Exception(exceptionMessage));
 
-            var controller = new TokensController(TokenService.Object, Logger.Object);
+            var controller = new TokensController(TokenService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
 
             controller.ControllerContext.HttpContext.Request.Scheme = "http";
             controller.ControllerContext.HttpContext.Request.Host = new HostString("someurl.com", 72001);

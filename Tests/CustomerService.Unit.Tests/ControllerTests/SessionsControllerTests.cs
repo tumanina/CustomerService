@@ -175,7 +175,10 @@ namespace CustomerService.UnitTests.ControllerTests
 
             SessionService.Setup(x => x.CreateSession(name, password, ip, interval)).Returns(new Session { Id = id, SessionKey = sessionKey, ClientId = clientId, IP = ip, CreatedDate = CreatedDate, Confirmed = true, Enabled = true });
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object);
+            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
             controller.ControllerContext.HttpContext.Request.Scheme = "http";
             controller.ControllerContext.HttpContext.Request.Host = new HostString("someurl.com", 72001);
             controller.ControllerContext.HttpContext.Request.Path = "/api/v1/tokens";
@@ -210,7 +213,10 @@ namespace CustomerService.UnitTests.ControllerTests
 
             SessionService.Setup(x => x.CreateSession(name, password, ip, interval)).Returns(new Session { Id = id, SessionKey = sessionKey, ClientId = clientId, IP = ip, CreatedDate = CreatedDate, Confirmed = true, Enabled = true });
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object);
+            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
             controller.ControllerContext.HttpContext.Request.Scheme = "http";
             controller.ControllerContext.HttpContext.Request.Host = new HostString("someurl.com", 72001);
             controller.ControllerContext.HttpContext.Request.Path = "/api/v1/tokens";
@@ -242,7 +248,10 @@ namespace CustomerService.UnitTests.ControllerTests
 
             SessionService.Setup(x => x.CreateSession(name, password, ip, interval)).Returns(new Session { Id = id, SessionKey = sessionKey, ClientId = clientId, IP = ip, CreatedDate = CreatedDate, Confirmed = true, Enabled = true });
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object);
+            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
             controller.ControllerContext.HttpContext.Request.Scheme = "http";
             controller.ControllerContext.HttpContext.Request.Host = new HostString("someurl.com", 72001);
             controller.ControllerContext.HttpContext.Request.Path = "/api/v1/tokens";
@@ -278,7 +287,10 @@ namespace CustomerService.UnitTests.ControllerTests
 
             SessionService.Setup(x => x.CreateSession(name, password, ip, interval)).Returns(new Session { Id = id, SessionKey = sessionKey, ClientId = clientId, IP = ip, CreatedDate = CreatedDate, Confirmed = true, Enabled = true });
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object);
+            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
             controller.ControllerContext.HttpContext.Request.Scheme = "http";
             controller.ControllerContext.HttpContext.Request.Host = new HostString("someurl.com", 72001);
             controller.ControllerContext.HttpContext.Request.Path = "/api/v1/tokens";
