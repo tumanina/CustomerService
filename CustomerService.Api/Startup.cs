@@ -35,15 +35,22 @@ namespace CustomerService.Api
             dbOptions.UseSqlServer(connectionString);
             services.AddSingleton<ICustomerDBContextFactory>(t => new CustomerDBContextFactory(dbOptions));
             services.AddSingleton<ICustomerDBContext, CustomerDBContext>();
+            services.AddSingleton<ISenderProcessor, SenderProcessor>();
             services.AddSingleton<ISessionRepository, SessionRepository>();
             services.AddSingleton<IClientRepository, ClientRepository>();
             services.AddSingleton<ITokenRepository, TokenRepository>();
             services.AddSingleton<ISessionService, SessionService>();
             services.AddSingleton<IClientService, ClientService>();
             services.AddSingleton<ITokenService, TokenService>();
+            services.AddSingleton<IGoogleAuthService, GoogleAuthService>();
+            services.AddSingleton<IEmailService, EmailService>();
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Info { Title = "Customer API", Version = "v1" });
+            });
 
             services.AddMvc();
-            services.AddMvcCore().AddJsonFormatters();
 
             var senders = Configuration.GetSection("Senders").Get<IEnumerable<SenderConfiguration>>();
 
@@ -62,11 +69,6 @@ namespace CustomerService.Api
                         sender.ExchangeName));
                 }
             }
-
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new Info { Title = "Customer API", Version = "v1" });
-            });
 
             var serviceProvider = services.BuildServiceProvider();
             services.AddLogging((builder) => builder.SetMinimumLevel(LogLevel.Warning));

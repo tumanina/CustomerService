@@ -14,13 +14,13 @@ namespace CustomerService.Business
 
         public void SendEmail(string email, string title, string body)
         {
-            var message = new EmailMessage { Tiltle = title, Body = body, Email = email };
+            var message = new EmailMessage { Title = title, Body = body, Email = email };
             _senderProcessor.SendMessage("Email", JsonConvert.SerializeObject(message));
         }
 
         private class EmailMessage
         {
-            public string Tiltle { get; set; }
+            public string Title { get; set; }
             public string Body { get; set; }
             public string Email { get; set; }
         }

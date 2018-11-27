@@ -60,12 +60,10 @@ namespace CustomerService.Api.Areas.V1.Controllers
                 {
                     return BadRequest("Request is empty or has invalid format");
                 }
-
                 if (!IsIPv4(request.IP))
                 {
                     return BadRequest("IP addres has invalid format.");
                 }
-
                 if (string.IsNullOrEmpty(request.AuthMethod))
                 {
                     return BadRequest("AuthMethod is empty.");
@@ -98,7 +96,6 @@ namespace CustomerService.Api.Areas.V1.Controllers
             try
             {
                 var result = _tokenService.UpdateActive(id, false);
-
                 if (result == null)
                 {
                     return NotFound();
@@ -124,7 +121,6 @@ namespace CustomerService.Api.Areas.V1.Controllers
             try
             {
                 var result = _tokenService.UpdateActive(id, true);
-
                 if (result == null)
                 {
                     return NotFound();

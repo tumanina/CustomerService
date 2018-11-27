@@ -1,5 +1,5 @@
 ﻿using CustomerService.Business.Models;
-using Google.Authenticator;
+using GoogleAuthenticatorService.Core;
 
 namespace CustomerService.Business
 {
