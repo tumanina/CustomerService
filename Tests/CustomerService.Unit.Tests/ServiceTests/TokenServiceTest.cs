@@ -7,7 +7,7 @@ using CustomerService.Business;
 using CustomerService.Repositories;
 using TokenEntity = CustomerService.Repositories.Entities.Token;
 
-namespace CustomerService.UnitTests.ServiceTests
+namespace CustomerService.Unit.Tests.ServiceTests
 {
     [TestClass]
     public class TokenServiceTest

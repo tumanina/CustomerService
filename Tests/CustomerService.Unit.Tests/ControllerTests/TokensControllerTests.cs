@@ -12,7 +12,7 @@ using CustomerService.Api.Areas.V1.Models;
 using Token = CustomerService.Business.Models.Token;
 using CustomerService.Business;
 
-namespace CustomerService.UnitTests.ControllerTests
+namespace CustomerService.Unit.Tests.ControllerTests
 {
     [TestClass]
     public class TokensControllerTests

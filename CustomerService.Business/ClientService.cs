@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using CustomerService.Business.Models;
@@ -10,10 +11,12 @@ namespace CustomerService.Business
     {
         private readonly IClientRepository _clientRepository;
         private readonly IGoogleAuthService _googleAuthService;
+        private readonly IEmailService _emailService;
 
-        public ClientService(IClientRepository ClientRepository, IGoogleAuthService googleAuthService)
+        public ClientService(IClientRepository ClientRepository, IEmailService emailService, IGoogleAuthService googleAuthService)
         {
             _clientRepository = ClientRepository;
+            _emailService = emailService;
             _googleAuthService = googleAuthService;
         }
 
@@ -66,6 +69,9 @@ namespace CustomerService.Business
                 return null;
             }
 
+            var letter = CreateRegistrationEmail(activationCode);
+            _emailService.SendEmail(email, "Regisration confirm letter", letter);
+
             return new Client(createdClient);
         }
 
@@ -79,6 +85,22 @@ namespace CustomerService.Business
             var updatedClient = _clientRepository.UpdateClient(id, email, ClientName);
             return updatedClient == null ? null : new Client(updatedClient);
         }
+
+        public bool SendActivationCode(string email)
+        {
+            var client = _clientRepository.GetClientByEmail(email);
+
+            if (client == null)
+            {
+                return false;
+            }
+
+            var letter = CreateRegistrationEmail(client.ActivationCode);
+            _emailService.SendEmail(email, "Regisration confirm letter", letter);
+
+            return true;
+        }
+
 
         public bool ValidateClientByGoogleAuth(Guid id, string oneTimePassword)
         {
@@ -159,6 +181,19 @@ namespace CustomerService.Business
             }
 
             return _clientRepository.DeactivateGoogleAuthCode(id);
+        }
+
+        private string CreateRegistrationEmail(string activationCode)
+        {
+            string body = string.Empty;
+
+            using (StreamReader reader = new StreamReader("EmailTemplates/RegistrationClientEmail.html"))
+            {
+                body = reader.ReadToEnd();
+            }
+            body = body.Replace("\r\n", "").Replace("{code}", activationCode);
+
+            return body;
         }
 
         private string GenerateCode(int len)

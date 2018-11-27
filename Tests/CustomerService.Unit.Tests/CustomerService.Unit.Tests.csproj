@@ -19,4 +19,8 @@
     <ProjectReference Include="..\..\CustomerService.Repositories\CustomerService.Repositories.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="MessageBroker\" />
+  </ItemGroup>
+
 </Project>

@@ -10,7 +10,7 @@ using CustomerService.Api.Areas.V1.Models;
 using CustomerService.Business;
 using Client = CustomerService.Business.Models.Client;
 
-namespace CustomerService.UnitTests.ControllerTests
+namespace CustomerService.Unit.Tests.ControllerTests
 {
     [TestClass]
     public class ClientsControllerTests
@@ -620,6 +620,86 @@ namespace CustomerService.UnitTests.ControllerTests
             var result1 = actionResult as ObjectResult;
 
             ClientService.Verify(x => x.ActivateClient(activationCode), Times.Once);
+            Assert.AreEqual(result, null);
+            Assert.AreEqual(result1.StatusCode, 500);
+        }
+
+        [TestMethod]
+        public void SendActivationCode_ClientExisted_ReturnOk()
+        {
+            ClientService.Invocations.Clear();
+
+            var email = "email2@mail.ru";
+
+            ClientService.Setup(x => x.SendActivationCode(email)).Returns(true);
+
+            var controller = new ClientsController(ClientService.Object, Logger.Object);
+
+            var actionResult = controller.SendActivationCode(email);
+            var result = actionResult as OkResult;
+
+            ClientService.Verify(x => x.SendActivationCode(email), Times.Once);
+            Assert.AreEqual(result.StatusCode, 200);
+        }
+
+        [TestMethod]
+        public void SendActivationCode_ClientNotExisted_ReturnNotFound()
+        {
+            ClientService.Invocations.Clear();
+
+            var email = "email2@mail.ru";
+
+            ClientService.Setup(x => x.SendActivationCode(email)).Returns(false);
+
+            var controller = new ClientsController(ClientService.Object, Logger.Object);
+
+            var actionResult = controller.SendActivationCode(email);
+            var result = actionResult as OkObjectResult;
+            var result1 = actionResult as NotFoundResult;
+
+
+            ClientService.Verify(x => x.SendActivationCode(email), Times.Once);
+            Assert.AreEqual(result, null);
+            Assert.AreEqual(result1.StatusCode, 404);
+        }
+
+        [TestMethod]
+        public void SendActivationCode_EmailHasInvalidFormat_ReturnOk()
+        {
+            ClientService.Invocations.Clear();
+
+            var email = "email2";
+
+            ClientService.Setup(x => x.SendActivationCode(email)).Returns(true);
+
+            var controller = new ClientsController(ClientService.Object, Logger.Object);
+
+            var actionResult = controller.SendActivationCode(email);
+            var result = actionResult as OkResult;
+            var result1 = actionResult as BadRequestObjectResult;
+
+            ClientService.Verify(x => x.SendActivationCode(email), Times.Never);
+            Assert.AreEqual(result, null);
+            Assert.AreEqual(result1.StatusCode, 400);
+        }
+
+        [TestMethod]
+        public void SendActivationCode_ServiceReturnException_ReturnInternalServerError()
+        {
+            ClientService.Invocations.Clear();
+
+            var email = "email2@mail.ru";
+            var exceptionMessage = "any exception message";
+
+            ClientService.Setup(x => x.SendActivationCode(email)).Throws(new Exception(exceptionMessage));
+
+            var controller = new ClientsController(ClientService.Object, Logger.Object);
+
+            var actionResult = controller.SendActivationCode(email);
+            var result = actionResult as OkObjectResult;
+            var result1 = actionResult as ObjectResult;
+
+            ClientService.Verify(x => x.SendActivationCode(email), Times.Once);
             Assert.AreEqual(result, null);
             Assert.AreEqual(result1.StatusCode, 500);
         }

@@ -89,17 +89,14 @@ namespace CustomerService.Api.Areas.V1.Controllers
                 {
                     return BadRequest("Request is empty or has invalid format");
                 }
-
                 if (string.IsNullOrEmpty(request.Name) || request.Name.Length > 32)
                 {
                     return BadRequest("Client name is empty or has length more than 32.");
                 }
-
                 if (string.IsNullOrEmpty(request.Password) || !ValidatePassword(request.Password))
                 {
                     return BadRequest("Password is empty or has invalid format.");
                 }
-
                 if (string.IsNullOrEmpty(request.Email) || !IsEmailValid(request.Email))
                 {
                     return BadRequest("Email is empty or has invalid format.");
@@ -132,6 +129,35 @@ namespace CustomerService.Api.Areas.V1.Controllers
             try
             {
                 var result = _clientService.ActivateClient(activationCode);
+                if (result == false)
+                {
+                    return NotFound();
+                }
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// Method for sending new activation code.
+        /// </summary>
+        /// <param name="email">client email</param>
+        /// <returns>Execution status (ОК/404/500).</returns>
+        // POST api/clients/activationcode
+        [HttpPost("activationcode", Name = "SendActivationCode")]
+        public IActionResult SendActivationCode(string email)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(email) || !IsEmailValid(email))
+                {
+                    return BadRequest("Email is empty or has invalid format.");
+                }
+                var result = _clientService.SendActivationCode(email);
 
                 if (result == false)
                 {
@@ -158,7 +184,6 @@ namespace CustomerService.Api.Areas.V1.Controllers
             try
             {
                 var result = _clientService.CreateGoogleAuthCode(id);
-
                 if (result == null)
                 {
                     return NotFound();
@@ -185,7 +210,6 @@ namespace CustomerService.Api.Areas.V1.Controllers
             try
             {
                 var result = _clientService.SetGoogleAuthCode(id, oneTimePassword);
-
                 if (result == null)
                 {
                     return NotFound();

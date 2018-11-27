@@ -8,7 +8,7 @@ using CustomerService.Business.Models;
 using CustomerService.Repositories;
 using SessionEntity = CustomerService.Repositories.Entities.Session;
 
-namespace CustomerService.UnitTests.ServiceTests
+namespace CustomerService.Unit.Tests.ServiceTests
 {
     [TestClass]
     public class SessionServiceTest

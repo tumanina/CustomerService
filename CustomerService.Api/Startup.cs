@@ -10,6 +10,10 @@ using CustomerService.Business;
 using Swashbuckle.AspNetCore.Swagger;
 using NLog.Extensions.Logging;
 using NLog.Web;
+using System.Collections.Generic;
+using CustomerService.Configuration;
+using CustomerService.Business.MessageBroker;
+using RabbitMQ.Client;
 
 namespace CustomerService.Api
 {
@@ -40,6 +44,24 @@ namespace CustomerService.Api
 
             services.AddMvc();
             services.AddMvcCore().AddJsonFormatters();
+
+            var senders = Configuration.GetSection("Senders").Get<IEnumerable<SenderConfiguration>>();
+
+            if (senders != null)
+            {
+                foreach (var sender in senders)
+                {
+                    services.AddSingleton<ISender>(t => new Sender(new ConnectionFactory
+                    {
+                        HostName = sender.Server.Host,
+                        UserName = sender.Server.UserName,
+                        Password = sender.Server.Password
+                    },
+                        sender.Type,
+                        sender.QueueName,
+                        sender.ExchangeName));
+                }
+            }
 
             services.AddSwaggerGen(c =>
             {

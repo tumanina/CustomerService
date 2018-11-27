@@ -12,7 +12,7 @@ using CustomerService.Api.Areas.V1.Models;
 using System.Net.Http;
 using CustomerService.Business;
 
-namespace CustomerService.UnitTests.ControllerTests
+namespace CustomerService.Unit.Tests.ControllerTests
 {
     [TestClass]
     public class SessionsControllerTests

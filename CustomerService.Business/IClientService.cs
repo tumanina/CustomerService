@@ -12,6 +12,7 @@ namespace CustomerService.Business
         Client Authentification(string name, string password);
         Client CreateClient(string email, string name, string password);
         Client UpdateClient(Guid id, string email, string name);
+        bool SendActivationCode(string email);
         bool ActivateClient(string activationCode);
         GoogleAuthCode CreateGoogleAuthCode(Guid id);
         bool? SetGoogleAuthCode(Guid id, string oneTimePassword);

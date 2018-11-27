@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CustomerService.Repositories.Entities;
 
-namespace CustomerService.UnitTests.RepositoryTests
+namespace CustomerService.Unit.Tests.RepositoryTests
 {
     [TestClass]
     public class SessionRepositoryTest
