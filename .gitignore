@@ -9,3 +9,4 @@ CustomerService.Repositories/bin/
 CustomerService.Repositories/obj/
 Tests/CustomerService.Unit.Tests/bin/
 Tests/CustomerService.Unit.Tests/obj/
+.vs/
