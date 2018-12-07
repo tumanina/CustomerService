@@ -10,8 +10,8 @@
   "profiles": {
     "IIS Express": {
       "commandName": "IISExpress",
-      "workingDirectory": "swagger",
-      "launchUrl": "swagger",
+      "launchBrowser": true,
+      "launchUrl": "swagger/",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
