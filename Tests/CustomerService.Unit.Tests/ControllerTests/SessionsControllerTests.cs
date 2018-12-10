@@ -52,9 +52,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
                     new Session { Id = id3, ClientId = clientId, IP = ip3, SessionKey = key3, CreatedDate = createDate3, UpdatedDate = updateDate3, ExpiredDate = expireDate3, Confirmed = true, Enabled = true }
                 });
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object);
+            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
 
-            var actionResult = controller.Get(clientId);
+            var actionResult = controller.Get();
             var result = actionResult as OkObjectResult;
             var listResult = result.Value as IEnumerable<Api.Areas.V1.Models.Session>;
 
@@ -75,9 +79,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             SessionService.Setup(x => x.GetSessions(clientId, false)).Returns(new List<Session>());
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object);
+            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
 
-            var actionResult = controller.Get(clientId);
+            var actionResult = controller.Get();
             var result = actionResult as OkObjectResult;
             var pagedResult = result.Value as IEnumerable<Api.Areas.V1.Models.Session>;
 
@@ -98,9 +106,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             SessionService.Setup(x => x.GetSession(clientId, id)).Returns(new Session { Id = id, ClientId = clientId, IP = ip, CreatedDate = CreatedDate, Confirmed = true, Enabled = true } );
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object);
+            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
 
-            var actionResult = controller.GetById(clientId, id);
+            var actionResult = controller.GetById(id);
             var result = actionResult as OkObjectResult;
             var session = result.Value as Api.Areas.V1.Models.Session;
 
@@ -124,9 +136,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             SessionService.Setup(x => x.GetSession(clientId, id)).Returns((Session) null);
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object);
+            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
 
-            var actionResult = controller.GetById(clientId, id);
+            var actionResult = controller.GetById(id);
             var result = actionResult as OkObjectResult;
             var result1 = actionResult as NotFoundResult;
 
@@ -146,9 +162,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             SessionService.Setup(x => x.GetSession(clientId, id)).Throws(new Exception(exceptionMessage));
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object);
+            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
 
-            var actionResult = controller.GetById(clientId, id);
+            var actionResult = controller.GetById(id);
             var result = actionResult as OkObjectResult;
             var result1 = actionResult as ObjectResult;
 
@@ -321,9 +341,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             SessionService.Setup(x => x.IsSessionConfirmRequired(clientId, id)).Returns(true);
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object);
+            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
 
-            var actionResult = controller.IsSessionConfirmRequired(clientId, id);
+            var actionResult = controller.IsSessionConfirmRequired(id);
             var result = actionResult as OkObjectResult;
  
             SessionService.Verify(x => x.IsSessionConfirmRequired(clientId, id), Times.Once);
@@ -341,9 +365,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             SessionService.Setup(x => x.IsSessionConfirmRequired(clientId, id)).Returns((bool?)null);
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object);
+            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
 
-            var actionResult = controller.IsSessionConfirmRequired(clientId, id);
+            var actionResult = controller.IsSessionConfirmRequired(id);
             var result = actionResult as NotFoundResult;
 
             SessionService.Verify(x => x.IsSessionConfirmRequired(clientId, id), Times.Once);
@@ -362,9 +390,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             SessionService.Setup(x => x.IsSessionConfirmRequired(clientId, id)).Throws(new Exception(exceptionMessage));
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object);
+            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
 
-            var actionResult = controller.IsSessionConfirmRequired(clientId, id);
+            var actionResult = controller.IsSessionConfirmRequired( id);
 
             var result = actionResult as OkObjectResult;
             var result1 = actionResult as ObjectResult;
@@ -387,9 +419,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             SessionService.Setup(x => x.ConfirmSession(clientId, id, oneTimePassword)).Returns(true);
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object);
+            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
 
-            var actionResult = controller.ConfirmSession(clientId, id, oneTimePassword);
+            var actionResult = controller.ConfirmSession(id, oneTimePassword);
 
             var result = actionResult as OkResult;
 
@@ -408,9 +444,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             SessionService.Setup(x => x.ConfirmSession(clientId, id, oneTimePassword)).Returns(false);
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object);
+            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
 
-            var actionResult = controller.ConfirmSession(clientId, id, oneTimePassword);
+            var actionResult = controller.ConfirmSession(id, oneTimePassword);
 
             var result = actionResult as NotFoundResult;
 
@@ -431,9 +471,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             SessionService.Setup(x => x.ConfirmSession(clientId, id, oneTimePassword)).Throws(new Exception(exceptionMessage));
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object);
+            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
 
-            var actionResult = controller.ConfirmSession(clientId, id, oneTimePassword);
+            var actionResult = controller.ConfirmSession(id, oneTimePassword);
 
             var result = actionResult as OkObjectResult;
             var result1 = actionResult as ObjectResult;
@@ -455,9 +499,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             SessionService.Setup(x => x.DisableSession(clientId, id)).Returns(true);
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object);
+            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
 
-            var actionResult = controller.DisableSession(clientId, id);
+            var actionResult = controller.DisableSession(id);
 
             var result = actionResult as OkResult;
 
@@ -475,9 +523,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             SessionService.Setup(x => x.DisableSession(clientId, id)).Returns(false);
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object);
+            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
 
-            var actionResult = controller.DisableSession(clientId, id);
+            var actionResult = controller.DisableSession(id);
 
             var result = actionResult as NotFoundResult;
 
@@ -497,9 +549,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             SessionService.Setup(x => x.DisableSession(clientId, id)).Throws(new Exception(exceptionMessage));
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object);
+            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
 
-            var actionResult = controller.DisableSession(clientId, id);
+            var actionResult = controller.DisableSession(id);
 
             var result = actionResult as OkObjectResult;
             var result1 = actionResult as ObjectResult;

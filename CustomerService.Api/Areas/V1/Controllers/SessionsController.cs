@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using CustomerService.Business;
 using CustomerService.Api.Areas.V1.Models;
+using CustomerService.Api.Authorization;
 using Session = CustomerService.Api.Areas.V1.Models.Session;
 
 namespace CustomerService.Api.Areas.V1.Controllers
@@ -29,16 +30,24 @@ namespace CustomerService.Api.Areas.V1.Controllers
         /// Returns list of client sessions.
         /// </summary>
         /// <param name="onlyActive">Show only active session</param>
-        /// <param name="clientId">Client identificator</param>
         /// <returns>Status of request response (OK/500) and list of client sessions in case of success execution.</returns>
         [HttpGet]
-        public IActionResult Get(Guid clientId, bool onlyActive = false)
+        [ClientAuthorization]
+        public IActionResult Get(bool onlyActive = false)
         {
             try
             {
-                var sessions = _sessionService.GetSessions(clientId, onlyActive);
+                if (HttpContext.Items.TryGetValue("clientId", out var client))
+                {
+                    var clientId = (Guid)client;
+                    var sessions = _sessionService.GetSessions(clientId, onlyActive);
 
-                return Ok(sessions.Select(t => new Session(t)));
+                    return Ok(sessions.Select(t => new Session(t)));
+                }
+                else
+                {
+                    return Unauthorized();
+                }
             }
             catch (Exception ex)
             {
@@ -50,20 +59,27 @@ namespace CustomerService.Api.Areas.V1.Controllers
         /// Returns session information by id.
         /// </summary>
         /// <param name="id">Session identifier</param>
-        /// <param name="clientId">Client identifier</param>
         /// <returns>Status of request response (OK/404/500) and session details in case of success execute.</returns>
         [HttpGet("{id}", Name = "GetSession")]
-        public IActionResult GetById(Guid clientId, Guid id)
+        public IActionResult GetById(Guid id)
         {
             try
             {
-                var session = _sessionService.GetSession(clientId, id);
-                if (session == null)
+                if (HttpContext.Items.TryGetValue("clientId", out var client))
                 {
-                    return NotFound();
-                }
+                    var clientId = (Guid)client;
+                    var session = _sessionService.GetSession(clientId, id);
+                    if (session == null)
+                    {
+                        return NotFound();
+                    }
 
-                return Ok(new Session(session));
+                    return Ok(new Session(session));
+                }
+                else
+                {
+                    return Unauthorized();
+                }
             }
             catch (Exception ex)
             {
@@ -114,17 +130,26 @@ namespace CustomerService.Api.Areas.V1.Controllers
         /// <returns>Status of request execution (ОК/404/500).</returns>
         // GET api/sessions/{id}/confirmrequired
         [HttpGet("{id}/confirm/required", Name = "IsSessionConfirmRequired")]
-        public IActionResult IsSessionConfirmRequired(Guid clientId, Guid id)
+        public IActionResult IsSessionConfirmRequired(Guid id)
         {
             try
             {
-                var result = _sessionService.IsSessionConfirmRequired(clientId, id);
-                if (result == null)
+                if (HttpContext.Items.TryGetValue("clientId", out var client))
                 {
-                    return NotFound();
+                    var clientId = (Guid)client;
+                    var result = _sessionService.IsSessionConfirmRequired(clientId, id);
+                    if (result == null)
+                    {
+                        return NotFound();
+                    }
+
+                    return Ok(result.Value);
+                }
+                else
+                {
+                    return Unauthorized();
                 }
 
-                return Ok(result.Value);
             }
             catch (Exception ex)
             {
@@ -140,17 +165,25 @@ namespace CustomerService.Api.Areas.V1.Controllers
         /// <returns>Status of request execution (ОК/404/500).</returns>
         // PUT api/sessions/{id}/confirm
         [HttpPut("{id}/confirm", Name = "ConfirmSession")]
-        public IActionResult ConfirmSession(Guid clientId, Guid id, [FromBody] string oneTimePassword)
+        public IActionResult ConfirmSession(Guid id, [FromBody] string oneTimePassword)
         {
             try
             {
-                var result = _sessionService.ConfirmSession(clientId, id, oneTimePassword);
-                if (result == false)
+                if (HttpContext.Items.TryGetValue("clientId", out var client))
                 {
-                    return NotFound();
-                }
+                    var clientId = (Guid)client;
+                    var result = _sessionService.ConfirmSession(clientId, id, oneTimePassword);
+                    if (result == false)
+                    {
+                        return NotFound();
+                    }
 
-                return Ok();
+                    return Ok();
+                }
+                else
+                {
+                    return Unauthorized();
+                }
             }
             catch (Exception ex)
             {
@@ -162,22 +195,29 @@ namespace CustomerService.Api.Areas.V1.Controllers
         /// Method for disable session by specified id.
         /// </summary>
         /// <param name="id">Session identifier</param>
-        /// <param name="clientId">Client identifier</param>
         /// <returns>Status of request execution (ОК/404/500).</returns>
         // PUT api/sessions/{id}/disable
         [HttpPut("{id}/disable", Name = "DisableSession")]
-        public IActionResult DisableSession(Guid clientId, Guid id)
+        public IActionResult DisableSession(Guid id)
         {
             try
             {
-                var result = _sessionService.DisableSession(clientId, id);
-
-                if (result == false)
+                if (HttpContext.Items.TryGetValue("clientId", out var client))
                 {
-                    return NotFound();
-                }
+                    var clientId = (Guid)client;
+                    var result = _sessionService.DisableSession(clientId, id);
 
-                return Ok();
+                    if (result == false)
+                    {
+                        return NotFound();
+                    }
+
+                    return Ok();
+                }
+                else
+                {
+                    return Unauthorized();
+                }
             }
             catch (Exception ex)
             {

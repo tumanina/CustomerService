@@ -48,9 +48,12 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             TokenService.Setup(x => x.GetTokens(clientId, It.IsAny<bool>())).Returns(data);
 
-            var controller = new TokensController(TokenService.Object, Logger.Object);
-
-            var actionResult = controller.Get(clientId);
+            var controller = new TokensController(TokenService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
+            var actionResult = controller.Get();
             var result = actionResult as OkObjectResult;
             var tokens = result.Value as List<Api.Areas.V1.Models.Token>;
 
@@ -71,9 +74,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             TokenService.Setup(x => x.GetTokens(clientId, It.IsAny<bool>())).Returns(new List<Token>());
 
-            var controller = new TokensController(TokenService.Object, Logger.Object);
+            var controller = new TokensController(TokenService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
 
-            var actionResult = controller.Get(clientId);
+            var actionResult = controller.Get();
             var result = actionResult as OkObjectResult;
             var tokens = result.Value as List<Api.Areas.V1.Models.Token>;
 
@@ -92,9 +99,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             TokenService.Setup(x => x.GetTokens(clientId, It.IsAny<bool>())).Throws(new Exception(exceptionMessage));
 
-            var controller = new TokensController(TokenService.Object, Logger.Object);
+            var controller = new TokensController(TokenService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
 
-            var actionResult = controller.Get(clientId);
+            var actionResult = controller.Get();
             var result = actionResult as OkObjectResult;
             var result1 = actionResult as ObjectResult;
 
@@ -126,13 +137,14 @@ namespace CustomerService.Unit.Tests.ControllerTests
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
 
             controller.ControllerContext.HttpContext.Request.Scheme = "http";
             controller.ControllerContext.HttpContext.Request.Host = new HostString("someurl.com", 72001);
             controller.ControllerContext.HttpContext.Request.Path = "/api/v1/tokens";
             controller.ControllerContext.HttpContext.Request.Method = HttpMethod.Post.ToString();
 
-            var actionResult = controller.Post(clientId, new CreateTokenRequest
+            var actionResult = controller.Post(new CreateTokenRequest
             {
                 IP = ip,
                 AuthMethod = authMethod
@@ -164,13 +176,14 @@ namespace CustomerService.Unit.Tests.ControllerTests
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
 
             controller.ControllerContext.HttpContext.Request.Scheme = "http";
             controller.ControllerContext.HttpContext.Request.Host = new HostString("someurl.com", 72001);
             controller.ControllerContext.HttpContext.Request.Path = "/api/v1/tokens";
             controller.ControllerContext.HttpContext.Request.Method = HttpMethod.Post.ToString();
 
-            var actionResult = controller.Post(clientId, null);
+            var actionResult = controller.Post(null);
 
             var result = actionResult as CreatedResult;
             var result1 = actionResult as BadRequestObjectResult;
@@ -195,14 +208,18 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             TokenService.Setup(x => x.CreateToken(clientId, ip, authMethod)).Returns(token);
 
-            var controller = new TokensController(TokenService.Object, Logger.Object);
+            var controller = new TokensController(TokenService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
 
             controller.ControllerContext.HttpContext.Request.Scheme = "http";
             controller.ControllerContext.HttpContext.Request.Host = new HostString("someurl.com", 72001);
             controller.ControllerContext.HttpContext.Request.Path = "/api/v1/tokens";
             controller.ControllerContext.HttpContext.Request.Method = HttpMethod.Post.ToString();
 
-            var actionResult = controller.Post(clientId, new CreateTokenRequest
+            var actionResult = controller.Post(new CreateTokenRequest
             {
                 AuthMethod = authMethod
             });
@@ -231,14 +248,18 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             TokenService.Setup(x => x.CreateToken(clientId, ip, authMethod)).Returns(token);
 
-            var controller = new TokensController(TokenService.Object, Logger.Object);
+            var controller = new TokensController(TokenService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
 
             controller.ControllerContext.HttpContext.Request.Scheme = "http";
             controller.ControllerContext.HttpContext.Request.Host = new HostString("someurl.com", 72001);
             controller.ControllerContext.HttpContext.Request.Path = "/api/v1/tokens";
             controller.ControllerContext.HttpContext.Request.Method = HttpMethod.Post.ToString();
 
-            var actionResult = controller.Post(clientId, new CreateTokenRequest
+            var actionResult = controller.Post(new CreateTokenRequest
             {
                 IP = ip,
                 AuthMethod = authMethod
@@ -267,13 +288,14 @@ namespace CustomerService.Unit.Tests.ControllerTests
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
 
             controller.ControllerContext.HttpContext.Request.Scheme = "http";
             controller.ControllerContext.HttpContext.Request.Host = new HostString("someurl.com", 72001);
             controller.ControllerContext.HttpContext.Request.Path = "/api/v1/tokens";
             controller.ControllerContext.HttpContext.Request.Method = HttpMethod.Post.ToString();
 
-            var actionResult = controller.Post(clientId, new CreateTokenRequest
+            var actionResult = controller.Post(new CreateTokenRequest
             {
                 IP = ip,
                 AuthMethod = authMethod
@@ -303,13 +325,14 @@ namespace CustomerService.Unit.Tests.ControllerTests
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
 
             controller.ControllerContext.HttpContext.Request.Scheme = "http";
             controller.ControllerContext.HttpContext.Request.Host = new HostString("someurl.com", 72001);
             controller.ControllerContext.HttpContext.Request.Path = "/api/v1/Tokens";
             controller.ControllerContext.HttpContext.Request.Method = HttpMethod.Post.ToString();
 
-            var actionResult = controller.Post(clientId, new CreateTokenRequest
+            var actionResult = controller.Post(new CreateTokenRequest
             {
                 IP = ip,
                 AuthMethod = authMethod

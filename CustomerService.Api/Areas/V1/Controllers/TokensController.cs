@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using CustomerService.Api.Areas.V1.Models;
 using CustomerService.Business;
+using CustomerService.Api.Authorization;
 
 namespace CustomerService.Api.Areas.V1.Controllers
 {
@@ -12,6 +13,7 @@ namespace CustomerService.Api.Areas.V1.Controllers
     /// Methods for viewing and managing tokens in system.
     /// </summary>
     [Route("api/v1/[controller]")]
+    [ClientAuthorization]
     public class TokensController : BaseController
     {
         private readonly ITokenService _tokenService;
@@ -27,16 +29,22 @@ namespace CustomerService.Api.Areas.V1.Controllers
         /// <summary>
         /// Returns list of client tokens in system.
         /// </summary>
-        /// <param name="clientId">Client identifier</param>
         /// <returns>Execution status (ОК/500) and list of tokens/error information.</returns>
         [HttpGet]
-        public IActionResult Get(Guid clientId, bool onlyActive = false)
+        public IActionResult Get(bool onlyActive = false)
         {
             try
             {
-                var tokens = _tokenService.GetTokens(clientId, onlyActive);
-
-                return Ok(tokens.Select(t => new Token(t)).ToList());
+                if (HttpContext.Items.TryGetValue("clientId", out var client))
+                {
+                    var clientId = (Guid)client;
+                    var tokens = _tokenService.GetTokens(clientId, onlyActive);
+                    return Ok(tokens.Select(t => new Token(t)).ToList());
+                }
+                else
+                {
+                    return Unauthorized();
+                }
             }
             catch (Exception ex)
             {
@@ -48,35 +56,42 @@ namespace CustomerService.Api.Areas.V1.Controllers
         /// Method for creating new token.
         /// </summary>
         /// <param name="request">Token details</param>
-        /// <param name="clientId">Client identifier</param>
         /// <returns>Execution status (ОК/500) and created token details.</returns>
         // POST api/tokens
         [HttpPost]
-        public IActionResult Post(Guid clientId, [FromBody]CreateTokenRequest request)
+        public IActionResult Post([FromBody]CreateTokenRequest request)
         {
             try
             {
-                if (request == null)
+                if (HttpContext.Items.TryGetValue("clientId", out var client))
                 {
-                    return BadRequest("Request is empty or has invalid format");
-                }
-                if (!IsIPv4(request.IP))
-                {
-                    return BadRequest("IP addres has invalid format.");
-                }
-                if (string.IsNullOrEmpty(request.AuthMethod))
-                {
-                    return BadRequest("AuthMethod is empty.");
-                }
+                    var clientId = (Guid)client;
+                    if (request == null)
+                    {
+                        return BadRequest("Request is empty or has invalid format");
+                    }
+                    if (!IsIPv4(request.IP))
+                    {
+                        return BadRequest("IP addres has invalid format.");
+                    }
+                    if (string.IsNullOrEmpty(request.AuthMethod))
+                    {
+                        return BadRequest("AuthMethod is empty.");
+                    }
 
-                var result = _tokenService.CreateToken(clientId, request.IP, request.AuthMethod);
+                    var result = _tokenService.CreateToken(clientId, request.IP, request.AuthMethod);
 
-                if (result == null)
-                {
-                    return StatusCode(500, "Token didn't create.");
+                    if (result == null)
+                    {
+                        return StatusCode(500, "Token didn't create.");
+                    }
+
+                    return Created(GetCreatedUrl(result.Id.ToString()), new Token(result));
                 }
-
-                return Created(GetCreatedUrl(result.Id.ToString()), new Token(result));
+                else
+                {
+                    return Unauthorized();
+                }
             }
             catch (Exception ex)
             {
