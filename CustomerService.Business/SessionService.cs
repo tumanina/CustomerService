@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using CustomerService.Business.Models;
+using CustomerService.Core;
 using CustomerService.Repositories;
 
 namespace CustomerService.Business
@@ -17,11 +16,11 @@ namespace CustomerService.Business
             _clientService = clientService;
         }
 
-        public IEnumerable<Session> GetSessions(Guid clientId, bool onlyActive = false)
+        public PagedList<Session> GetSessions(Guid clientId, bool onlyActive = false, int pageNumber = 1, int pageSize = 20)
         {
-            var sessions = _sessionRepository.GetSessions(clientId, onlyActive);
+            var sessions = _sessionRepository.GetSessions(clientId, onlyActive, pageNumber, pageSize);
 
-            return sessions.Select(t => new Session(t));
+            return sessions.Convert(t => new Session(t));
         }
 
         public Session GetSession(Guid clientId, Guid sessionId)

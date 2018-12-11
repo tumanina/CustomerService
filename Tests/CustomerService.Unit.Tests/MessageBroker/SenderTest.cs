@@ -17,7 +17,7 @@ namespace CustomerService.Unit.Tests.MessageBrockerTests
         [TestMethod]
         public void SendMessage_UseConnectionFactoryAndModel()
         {
-            ConnectionFactory.ResetCalls();
+            ConnectionFactory.Invocations.Clear();
 
             var message = "{ 'currency' : 'BTC' }";
             var queueName = "126_queue";

@@ -6,6 +6,7 @@ using CustomerService.Business;
 using CustomerService.Api.Areas.V1.Models;
 using CustomerService.Api.Authorization;
 using Session = CustomerService.Api.Areas.V1.Models.Session;
+using CustomerService.Core;
 
 namespace CustomerService.Api.Areas.V1.Controllers
 {
@@ -30,19 +31,21 @@ namespace CustomerService.Api.Areas.V1.Controllers
         /// Returns list of client sessions.
         /// </summary>
         /// <param name="onlyActive">Show only active session</param>
+        /// <param name="pageNumber">Page number</param>
+        /// <param name="pageSize">Page size</param>
         /// <returns>Status of request response (OK/500) and list of client sessions in case of success execution.</returns>
         [HttpGet]
         [ClientAuthorization]
-        public IActionResult Get(bool onlyActive = false)
+        public IActionResult Get(bool onlyActive = false, int? pageNumber = 1, int? pageSize = 20)
         {
             try
             {
                 if (HttpContext.Items.TryGetValue("clientId", out var client))
                 {
                     var clientId = (Guid)client;
-                    var sessions = _sessionService.GetSessions(clientId, onlyActive);
+                    var sessions = _sessionService.GetSessions(clientId, onlyActive, pageNumber.Value, pageSize.Value);
 
-                    return Ok(sessions.Select(t => new Session(t)));
+                    return Ok(sessions.Convert(t => new Session(t)));
                 }
                 else
                 {

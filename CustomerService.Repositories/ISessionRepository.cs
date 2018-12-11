@@ -1,12 +1,12 @@
-﻿using CustomerService.Repositories.Entities;
+﻿using CustomerService.Core;
+using CustomerService.Repositories.Entities;
 using System;
-using System.Collections.Generic;
 
 namespace CustomerService.Repositories
 {
     public interface ISessionRepository
     {
-        IEnumerable<Session> GetSessions(Guid clientId, bool onlyActive);
+        PagedList<Session> GetSessions(Guid clientId, bool onlyActive, int pageNumber = 1, int pageSize = 20);
         Session GetSession(Guid clientId, Guid id);
         Session GetSessionByKey(string key);
         Session CreateSession(Guid clientId, string ip, int interval, bool confirmed);

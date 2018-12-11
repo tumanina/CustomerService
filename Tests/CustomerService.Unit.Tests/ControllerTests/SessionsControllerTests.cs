@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using CustomerService.Api.Areas.V1.Models;
 using System.Net.Http;
 using CustomerService.Business;
+using CustomerService.Core;
 
 namespace CustomerService.Unit.Tests.ControllerTests
 {
@@ -45,12 +46,19 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var updateDate2 = DateTime.UtcNow.AddMinutes(-6);
             var updateDate3 = DateTime.UtcNow.AddMinutes(-9);
 
-            SessionService.Setup(x => x.GetSessions(clientId, false)).Returns(new List<Session>
+            SessionService.Setup(x => x.GetSessions(clientId, false, 1, 20)).Returns(new PagedList<Session>
+            {
+                List = new List<Session>
                 {
                     new Session { Id = id1, ClientId = clientId, IP = ip1, SessionKey = key1, CreatedDate = createDate1, UpdatedDate = updateDate1, ExpiredDate = expireDate1, Confirmed = true, Enabled = true },
                     new Session { Id = id2, ClientId = clientId, IP = ip2, SessionKey = key2, CreatedDate = createDate2, UpdatedDate = updateDate2, ExpiredDate = expireDate2, Confirmed = true, Enabled = true },
                     new Session { Id = id3, ClientId = clientId, IP = ip3, SessionKey = key3, CreatedDate = createDate3, UpdatedDate = updateDate3, ExpiredDate = expireDate3, Confirmed = true, Enabled = true }
-                });
+                },
+                PageCount = 1,
+                PageSize = 20,
+                PageIndex = 1,
+                TotalCount = 3
+            });
 
             var controller = new SessionsController(SessionService.Object, Logger.Object)
             {
@@ -60,14 +68,63 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             var actionResult = controller.Get();
             var result = actionResult as OkObjectResult;
-            var listResult = result.Value as IEnumerable<Api.Areas.V1.Models.Session>;
+            var pagedResult = result.Value as PagedList<Api.Areas.V1.Models.Session>;
 
-            SessionService.Verify(x => x.GetSessions(clientId, false), Times.Once);
+            SessionService.Verify(x => x.GetSessions(clientId, false, 1, 20), Times.Once);
             Assert.AreEqual(result.StatusCode, 200);
-            Assert.AreEqual(listResult.Count(), 3);
-            Assert.IsTrue(listResult.Any(t => t.Id == id1 && t.ClientId == clientId && t.SessionKey == key1 && t.CreatedDate == createDate1 && t.UpdatedDate == updateDate1 && t.ExpiredDate == expireDate1 && t.Confirmed == true && t.Enabled == true));
-            Assert.IsTrue(listResult.Any(t => t.Id == id2 && t.ClientId == clientId && t.SessionKey == key2 && t.CreatedDate == createDate2 && t.UpdatedDate == updateDate2 && t.ExpiredDate == expireDate2 && t.Confirmed == true && t.Enabled == true));
-            Assert.IsTrue(listResult.Any(t => t.Id == id3 && t.ClientId == clientId && t.SessionKey == key3 && t.CreatedDate == createDate3 && t.UpdatedDate == updateDate3 && t.ExpiredDate == expireDate3 && t.Confirmed == true && t.Enabled == true));
+            Assert.AreEqual(pagedResult.PageCount, 1);
+            Assert.AreEqual(pagedResult.PageIndex, 1);
+            Assert.AreEqual(pagedResult.PageSize, 20);
+            Assert.AreEqual(pagedResult.TotalCount, 3);
+            Assert.AreEqual(pagedResult.List.Count(), 3);
+            Assert.IsTrue(pagedResult.List.Any(t => t.Id == id1 && t.ClientId == clientId && t.SessionKey == key1 && t.CreatedDate == createDate1 && t.UpdatedDate == updateDate1 && t.ExpiredDate == expireDate1 && t.Confirmed == true && t.Enabled == true));
+            Assert.IsTrue(pagedResult.List.Any(t => t.Id == id2 && t.ClientId == clientId && t.SessionKey == key2 && t.CreatedDate == createDate2 && t.UpdatedDate == updateDate2 && t.ExpiredDate == expireDate2 && t.Confirmed == true && t.Enabled == true));
+            Assert.IsTrue(pagedResult.List.Any(t => t.Id == id3 && t.ClientId == clientId && t.SessionKey == key3 && t.CreatedDate == createDate3 && t.UpdatedDate == updateDate3 && t.ExpiredDate == expireDate3 && t.Confirmed == true && t.Enabled == true));
+        }
+
+        [TestMethod]
+        public void GetSessions_SessionsExisted_ReturnCorrectPagging()
+        {
+            SessionService.Invocations.Clear();
+
+            var clientId = Guid.NewGuid();
+            var id3 = Guid.NewGuid();
+            var key3 = Guid.NewGuid().ToString();
+            var ip3 = "127.0.0.3";
+            var createDate3 = DateTime.UtcNow.AddDays(-3);
+            var expireDate3 = DateTime.UtcNow.AddDays(3);
+            var updateDate3 = DateTime.UtcNow.AddMinutes(-9);
+
+            SessionService.Setup(x => x.GetSessions(clientId, true, 2, 2)).Returns(new PagedList<Session>
+            {
+                List = new List<Session>
+                {
+                    new Session { Id = id3, ClientId = clientId, IP = ip3, SessionKey = key3, CreatedDate = createDate3, UpdatedDate = updateDate3, ExpiredDate = expireDate3, Confirmed = true, Enabled = true }
+                },
+                PageCount = 2,
+                PageSize = 2,
+                PageIndex = 2,
+                TotalCount = 3
+            });
+
+            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            {
+                ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            };
+            controller.ControllerContext.HttpContext.Items.Add("clientId", clientId);
+
+            var actionResult = controller.Get(true, 2, 2);
+            var result = actionResult as OkObjectResult;
+            var pagedResult = result.Value as PagedList<Api.Areas.V1.Models.Session>;
+
+            SessionService.Verify(x => x.GetSessions(clientId, true, 2, 2), Times.Once);
+            Assert.AreEqual(result.StatusCode, 200);
+            Assert.AreEqual(pagedResult.PageCount, 2);
+            Assert.AreEqual(pagedResult.PageIndex, 2);
+            Assert.AreEqual(pagedResult.PageSize, 2);
+            Assert.AreEqual(pagedResult.TotalCount, 3);
+            Assert.AreEqual(pagedResult.List.Count(), 1);
+            Assert.IsTrue(pagedResult.List.Any(t => t.Id == id3 && t.ClientId == clientId && t.SessionKey == key3 && t.CreatedDate == createDate3 && t.UpdatedDate == updateDate3 && t.ExpiredDate == expireDate3 && t.Confirmed == true && t.Enabled == true));
         }
 
         [TestMethod]
@@ -77,7 +134,14 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             var clientId = Guid.NewGuid();
 
-            SessionService.Setup(x => x.GetSessions(clientId, false)).Returns(new List<Session>());
+            SessionService.Setup(x => x.GetSessions(clientId, false, 1, 20)).Returns(new PagedList<Session>
+            {
+                List = new List<Session>(),
+                PageCount = 0,
+                PageIndex = 1,
+                PageSize = 20,
+                TotalCount = 0
+            });
 
             var controller = new SessionsController(SessionService.Object, Logger.Object)
             {
@@ -87,11 +151,15 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             var actionResult = controller.Get();
             var result = actionResult as OkObjectResult;
-            var pagedResult = result.Value as IEnumerable<Api.Areas.V1.Models.Session>;
+            var pagedResult = result.Value as PagedList<Api.Areas.V1.Models.Session>;
 
-            SessionService.Verify(x => x.GetSessions(clientId, false), Times.Once);
+            SessionService.Verify(x => x.GetSessions(clientId, false, 1, 20), Times.Once);
             Assert.AreEqual(result.StatusCode, 200);
-            Assert.AreEqual(pagedResult.Count(), 0);
+            Assert.AreEqual(pagedResult.PageCount, 0);
+            Assert.AreEqual(pagedResult.PageIndex, 1);
+            Assert.AreEqual(pagedResult.PageSize, 20);
+            Assert.AreEqual(pagedResult.TotalCount, 0);
+            Assert.AreEqual(pagedResult.List.Count(), 0);
         }
 
         [TestMethod]

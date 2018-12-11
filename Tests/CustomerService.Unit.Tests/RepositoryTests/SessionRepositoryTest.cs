@@ -63,10 +63,14 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             var result = repository.GetSessions(clientId, false);
 
             CustomerDBContext.Verify(x => x.Session, Times.Once);
-            Assert.AreEqual(result.Count(), 3);
-            Assert.IsTrue(result.Any(t => t.Id == id1 && t.ClientId == clientId && t.SessionKey == key1 && t.CreatedDate == createDate1 && t.UpdatedDate == updateDate1 && t.ExpiredDate == expireDate1 && t.Confirmed == true && t.Enabled == true));
-            Assert.IsTrue(result.Any(t => t.Id == id2 && t.ClientId == clientId && t.SessionKey == key2 && t.CreatedDate == createDate2 && t.UpdatedDate == updateDate2 && t.ExpiredDate == expireDate2 && t.Confirmed == true && t.Enabled == false));
-            Assert.IsTrue(result.Any(t => t.Id == id3 && t.ClientId == clientId && t.SessionKey == key3 && t.CreatedDate == createDate3 && t.UpdatedDate == updateDate3 && t.ExpiredDate == expireDate3 && t.Confirmed == true && t.Enabled == true));
+            Assert.AreEqual(result.PageCount, 1);
+            Assert.AreEqual(result.PageIndex, 1);
+            Assert.AreEqual(result.PageSize, 20);
+            Assert.AreEqual(result.TotalCount, 3);
+            Assert.AreEqual(result.List.Count(), 3);
+            Assert.IsTrue(result.List.Any(t => t.Id == id1 && t.ClientId == clientId && t.SessionKey == key1 && t.CreatedDate == createDate1 && t.UpdatedDate == updateDate1 && t.ExpiredDate == expireDate1 && t.Confirmed == true && t.Enabled == true));
+            Assert.IsTrue(result.List.Any(t => t.Id == id2 && t.ClientId == clientId && t.SessionKey == key2 && t.CreatedDate == createDate2 && t.UpdatedDate == updateDate2 && t.ExpiredDate == expireDate2 && t.Confirmed == true && t.Enabled == false));
+            Assert.IsTrue(result.List.Any(t => t.Id == id3 && t.ClientId == clientId && t.SessionKey == key3 && t.CreatedDate == createDate3 && t.UpdatedDate == updateDate3 && t.ExpiredDate == expireDate3 && t.Confirmed == true && t.Enabled == true));
         }
 
         [TestMethod]
@@ -123,9 +127,13 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             var result = repository.GetSessions(clientId, true);
 
             CustomerDBContext.Verify(x => x.Session, Times.Once);
-            Assert.AreEqual(result.Count(), 2);
-            Assert.IsTrue(result.Any(t => t.Id == id1 && t.ClientId == clientId && t.SessionKey == key1 && t.CreatedDate == createDate1 && t.UpdatedDate == updateDate1 && t.ExpiredDate == expireDate1 && t.Confirmed == true && t.Enabled == true));
-            Assert.IsTrue(result.Any(t => t.Id == id4 && t.ClientId == clientId && t.SessionKey == key4 && t.CreatedDate == createDate4 && t.UpdatedDate == updateDate4 && t.ExpiredDate == expireDate4 && t.Confirmed == true && t.Enabled == true));
+            Assert.AreEqual(result.PageCount, 1);
+            Assert.AreEqual(result.PageIndex, 1);
+            Assert.AreEqual(result.PageSize, 20);
+            Assert.AreEqual(result.TotalCount, 2);
+            Assert.AreEqual(result.List.Count(), 2);
+            Assert.IsTrue(result.List.Any(t => t.Id == id1 && t.ClientId == clientId && t.SessionKey == key1 && t.CreatedDate == createDate1 && t.UpdatedDate == updateDate1 && t.ExpiredDate == expireDate1 && t.Confirmed == true && t.Enabled == true));
+            Assert.IsTrue(result.List.Any(t => t.Id == id4 && t.ClientId == clientId && t.SessionKey == key4 && t.CreatedDate == createDate4 && t.UpdatedDate == updateDate4 && t.ExpiredDate == expireDate4 && t.Confirmed == true && t.Enabled == true));
         }
 
         [TestMethod]
@@ -152,7 +160,11 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             var result = repository.GetSessions(clientId);
 
             CustomerDBContext.Verify(x => x.Session, Times.Once);
-            Assert.AreEqual(result.Count(), 0);
+            Assert.AreEqual(result.PageCount, 0);
+            Assert.AreEqual(result.PageIndex, 1);
+            Assert.AreEqual(result.PageSize, 20);
+            Assert.AreEqual(result.TotalCount, 0);
+            Assert.AreEqual(result.List.Count(), 0);
         }
 
         [TestMethod]

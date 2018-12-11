@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using CustomerService.Business.Models;
+using CustomerService.Core;
 
 namespace CustomerService.Business
 {
     public interface ISessionService
     {
-        IEnumerable<Session> GetSessions(Guid clientId, bool onlyActive);
+        PagedList<Session> GetSessions(Guid clientId, bool onlyActive, int pageNumber = 1, int pageSize = 20);
         Session GetSession(Guid clientId, Guid sessionId);
         Session GetSessionByKey(string sessionKey);
         bool? IsSessionConfirmRequired(Guid clientId, Guid sessionId);

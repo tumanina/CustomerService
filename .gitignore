@@ -10,3 +10,5 @@ CustomerService.Repositories/obj/
 Tests/CustomerService.Unit.Tests/bin/
 Tests/CustomerService.Unit.Tests/obj/
 .vs/
+CustomerService.Core/obj/
+CustomerService.Core/bin/

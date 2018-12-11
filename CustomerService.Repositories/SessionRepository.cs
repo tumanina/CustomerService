@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
+using CustomerService.Core;
 using CustomerService.Repositories.DAL;
 using CustomerService.Repositories.Entities;
 
@@ -15,11 +15,11 @@ namespace CustomerService.Repositories
             _factory = factory;
         }
 
-        public IEnumerable<Session> GetSessions(Guid clientId, bool onlyActive = false)
+        public PagedList<Session> GetSessions(Guid clientId, bool onlyActive = false, int pageNumber = 1, int pageSize = 20)
         {
             using (var context = _factory.CreateDBContext())
             {
-                return context.Session.Where(t => t.ClientId == clientId && (!onlyActive || (t.Enabled && t.ExpiredDate > DateTime.UtcNow))).ToList();
+                return context.Session.Where(t => t.ClientId == clientId && (!onlyActive || (t.Enabled && t.ExpiredDate > DateTime.UtcNow))).ToPagedList(pageNumber, pageSize);
             }
         }
 

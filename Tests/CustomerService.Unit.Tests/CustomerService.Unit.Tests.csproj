@@ -16,6 +16,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\CustomerService.Api\CustomerService.Api.csproj" />
     <ProjectReference Include="..\..\CustomerService.Business\CustomerService.Business.csproj" />
+    <ProjectReference Include="..\..\CustomerService.Core\CustomerService.Core.csproj" />
     <ProjectReference Include="..\..\CustomerService.Repositories\CustomerService.Repositories.csproj" />
   </ItemGroup>
 

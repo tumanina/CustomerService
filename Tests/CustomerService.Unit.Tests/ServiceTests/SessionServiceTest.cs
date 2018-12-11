@@ -7,6 +7,7 @@ using CustomerService.Business;
 using CustomerService.Business.Models;
 using CustomerService.Repositories;
 using SessionEntity = CustomerService.Repositories.Entities.Session;
+using CustomerService.Core;
 
 namespace CustomerService.Unit.Tests.ServiceTests
 {
@@ -42,24 +43,35 @@ namespace CustomerService.Unit.Tests.ServiceTests
             var updateDate2 = DateTime.UtcNow.AddMinutes(-6);
             var updateDate3 = DateTime.UtcNow.AddMinutes(-9);
 
-            var data = new List<SessionEntity>
+            var data = new PagedList<SessionEntity>
+            {
+                List = new List<SessionEntity>
                 {
-                    new SessionEntity { Id = id1, ClientId = clientId, IP = ip1, SessionKey = key1, CreatedDate = createDate1, UpdatedDate = updateDate1, ExpiredDate = expireDate1, Confirmed = true, Enabled = true },
-                    new SessionEntity { Id = id2, ClientId = clientId, IP = ip2, SessionKey = key2, CreatedDate = createDate2, UpdatedDate = updateDate2, ExpiredDate = expireDate2, Confirmed = true, Enabled = true },
-                    new SessionEntity { Id = id3, ClientId = clientId, IP = ip3, SessionKey = key3, CreatedDate = createDate3, UpdatedDate = updateDate3, ExpiredDate = expireDate3, Confirmed = true, Enabled = true }
-                };
+                new SessionEntity { Id = id1, ClientId = clientId, IP = ip1, SessionKey = key1, CreatedDate = createDate1, UpdatedDate = updateDate1, ExpiredDate = expireDate1, Confirmed = true, Enabled = true },
+                new SessionEntity { Id = id2, ClientId = clientId, IP = ip2, SessionKey = key2, CreatedDate = createDate2, UpdatedDate = updateDate2, ExpiredDate = expireDate2, Confirmed = true, Enabled = true },
+                new SessionEntity { Id = id3, ClientId = clientId, IP = ip3, SessionKey = key3, CreatedDate = createDate3, UpdatedDate = updateDate3, ExpiredDate = expireDate3, Confirmed = true, Enabled = true }
+                },
+                PageCount = 1,
+                PageSize = 20,
+                PageIndex = 1,
+                TotalCount = 3
+            };
 
-            SessionRepository.Setup(x => x.GetSessions(clientId, false)).Returns(data);
+            SessionRepository.Setup(x => x.GetSessions(clientId, false, 1, 20)).Returns(data);
 
             var service = new SessionService(SessionRepository.Object, ClientService.Object);
 
             var result = service.GetSessions(clientId);
 
-            SessionRepository.Verify(x => x.GetSessions(clientId, false), Times.Once);
-            Assert.AreEqual(result.Count(), 3);
-            Assert.IsTrue(result.Any(t => t.Id == id1 && t.ClientId == clientId && t.SessionKey == key1 && t.CreatedDate == createDate1 && t.UpdatedDate == updateDate1 && t.ExpiredDate == expireDate1 && t.Confirmed == true && t.Enabled == true));
-            Assert.IsTrue(result.Any(t => t.Id == id2 && t.ClientId == clientId && t.SessionKey == key2 && t.CreatedDate == createDate2 && t.UpdatedDate == updateDate2 && t.ExpiredDate == expireDate2 && t.Confirmed == true && t.Enabled == true));
-            Assert.IsTrue(result.Any(t => t.Id == id3 && t.ClientId == clientId && t.SessionKey == key3 && t.CreatedDate == createDate3 && t.UpdatedDate == updateDate3 && t.ExpiredDate == expireDate3 && t.Confirmed == true && t.Enabled == true));
+            SessionRepository.Verify(x => x.GetSessions(clientId, false, 1, 20), Times.Once);
+            Assert.AreEqual(result.PageCount, 1);
+            Assert.AreEqual(result.PageIndex, 1);
+            Assert.AreEqual(result.PageSize, 20);
+            Assert.AreEqual(result.TotalCount, 3);
+            Assert.AreEqual(result.List.Count(), 3);
+            Assert.IsTrue(result.List.Any(t => t.Id == id1 && t.ClientId == clientId && t.SessionKey == key1 && t.CreatedDate == createDate1 && t.UpdatedDate == updateDate1 && t.ExpiredDate == expireDate1 && t.Confirmed == true && t.Enabled == true));
+            Assert.IsTrue(result.List.Any(t => t.Id == id2 && t.ClientId == clientId && t.SessionKey == key2 && t.CreatedDate == createDate2 && t.UpdatedDate == updateDate2 && t.ExpiredDate == expireDate2 && t.Confirmed == true && t.Enabled == true));
+            Assert.IsTrue(result.List.Any(t => t.Id == id3 && t.ClientId == clientId && t.SessionKey == key3 && t.CreatedDate == createDate3 && t.UpdatedDate == updateDate3 && t.ExpiredDate == expireDate3 && t.Confirmed == true && t.Enabled == true));
         }
 
         [TestMethod]
@@ -70,16 +82,27 @@ namespace CustomerService.Unit.Tests.ServiceTests
 
             var clientId = Guid.NewGuid();
 
-            var data = new List<SessionEntity>();
+            var data = new PagedList<SessionEntity>
+            {
+                List = new List<SessionEntity>(),
+                PageCount = 0,
+                PageSize = 20,
+                PageIndex = 1,
+                TotalCount = 0
+            };
 
-            SessionRepository.Setup(x => x.GetSessions(clientId, false)).Returns(data);
+            SessionRepository.Setup(x => x.GetSessions(clientId, false, 1, 20)).Returns(data);
 
             var service = new SessionService(SessionRepository.Object, ClientService.Object);
 
             var result = service.GetSessions(clientId);
 
-            SessionRepository.Verify(x => x.GetSessions(clientId, false), Times.Once);
-            Assert.AreEqual(result.Count(), 0);
+            SessionRepository.Verify(x => x.GetSessions(clientId, false, 1, 20), Times.Once);
+            Assert.AreEqual(result.PageCount, 0);
+            Assert.AreEqual(result.PageIndex, 1);
+            Assert.AreEqual(result.PageSize, 20);
+            Assert.AreEqual(result.TotalCount, 0);
+            Assert.AreEqual(result.List.Count(), 0);
         }
 
         [TestMethod]
