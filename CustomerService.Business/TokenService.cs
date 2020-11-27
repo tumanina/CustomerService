@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using CustomerService.Business.Models;
-using CustomerService.Repositories;
+using CustomerService.Repositories.Interfaces;
 
 namespace CustomerService.Business
 {

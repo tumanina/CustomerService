@@ -18,14 +18,18 @@ namespace CustomerService.Unit.Tests.ControllerTests
     [TestClass]
     public class SessionsControllerTests
     {
-        private static readonly Mock<ISessionService> SessionService = new Mock<ISessionService>();
-        private static readonly Mock<ILogger<SessionsController>> Logger = new Mock<ILogger<SessionsController>>();
+        private static readonly Mock<ISessionService> _sessionServiceMock = new Mock<ISessionService>();
+        private static readonly Mock<ILogger<SessionsController>> _loggerMock = new Mock<ILogger<SessionsController>>();
+
+        [TestCleanup]
+        public void TestCleanUp()
+        {
+            _sessionServiceMock.Invocations.Clear();
+        }
 
         [TestMethod]
         public void GetSessions_SessionsExisted_ReturnOk()
         {
-            SessionService.Invocations.Clear();
-
             var clientId = Guid.NewGuid();
             var id1 = Guid.NewGuid();
             var id2 = Guid.NewGuid();
@@ -46,7 +50,7 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var updateDate2 = DateTime.UtcNow.AddMinutes(-6);
             var updateDate3 = DateTime.UtcNow.AddMinutes(-9);
 
-            SessionService.Setup(x => x.GetSessions(clientId, false, 1, 20)).Returns(new PagedList<Session>
+            _sessionServiceMock.Setup(x => x.GetSessions(clientId, false, 1, 20)).Returns(new PagedList<Session>
             {
                 List = new List<Session>
                 {
@@ -60,7 +64,7 @@ namespace CustomerService.Unit.Tests.ControllerTests
                 TotalCount = 3
             });
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            var controller = new SessionsController(_sessionServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -70,7 +74,7 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var result = actionResult as OkObjectResult;
             var pagedResult = result.Value as PagedList<Api.Areas.V1.Models.Session>;
 
-            SessionService.Verify(x => x.GetSessions(clientId, false, 1, 20), Times.Once);
+            _sessionServiceMock.Verify(x => x.GetSessions(clientId, false, 1, 20), Times.Once);
             Assert.AreEqual(result.StatusCode, 200);
             Assert.AreEqual(pagedResult.PageCount, 1);
             Assert.AreEqual(pagedResult.PageIndex, 1);
@@ -85,8 +89,6 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void GetSessions_SessionsExisted_ReturnCorrectPagging()
         {
-            SessionService.Invocations.Clear();
-
             var clientId = Guid.NewGuid();
             var id3 = Guid.NewGuid();
             var key3 = Guid.NewGuid().ToString();
@@ -95,7 +97,7 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var expireDate3 = DateTime.UtcNow.AddDays(3);
             var updateDate3 = DateTime.UtcNow.AddMinutes(-9);
 
-            SessionService.Setup(x => x.GetSessions(clientId, true, 2, 2)).Returns(new PagedList<Session>
+            _sessionServiceMock.Setup(x => x.GetSessions(clientId, true, 2, 2)).Returns(new PagedList<Session>
             {
                 List = new List<Session>
                 {
@@ -107,7 +109,7 @@ namespace CustomerService.Unit.Tests.ControllerTests
                 TotalCount = 3
             });
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            var controller = new SessionsController(_sessionServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -117,7 +119,7 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var result = actionResult as OkObjectResult;
             var pagedResult = result.Value as PagedList<Api.Areas.V1.Models.Session>;
 
-            SessionService.Verify(x => x.GetSessions(clientId, true, 2, 2), Times.Once);
+            _sessionServiceMock.Verify(x => x.GetSessions(clientId, true, 2, 2), Times.Once);
             Assert.AreEqual(result.StatusCode, 200);
             Assert.AreEqual(pagedResult.PageCount, 2);
             Assert.AreEqual(pagedResult.PageIndex, 2);
@@ -130,11 +132,9 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void GetSessions_SessionsNotExisted_ReturnCorrect()
         {
-            SessionService.Invocations.Clear();
-
             var clientId = Guid.NewGuid();
 
-            SessionService.Setup(x => x.GetSessions(clientId, false, 1, 20)).Returns(new PagedList<Session>
+            _sessionServiceMock.Setup(x => x.GetSessions(clientId, false, 1, 20)).Returns(new PagedList<Session>
             {
                 List = new List<Session>(),
                 PageCount = 0,
@@ -143,7 +143,7 @@ namespace CustomerService.Unit.Tests.ControllerTests
                 TotalCount = 0
             });
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            var controller = new SessionsController(_sessionServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -153,7 +153,7 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var result = actionResult as OkObjectResult;
             var pagedResult = result.Value as PagedList<Api.Areas.V1.Models.Session>;
 
-            SessionService.Verify(x => x.GetSessions(clientId, false, 1, 20), Times.Once);
+            _sessionServiceMock.Verify(x => x.GetSessions(clientId, false, 1, 20), Times.Once);
             Assert.AreEqual(result.StatusCode, 200);
             Assert.AreEqual(pagedResult.PageCount, 0);
             Assert.AreEqual(pagedResult.PageIndex, 1);
@@ -165,16 +165,14 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void GetSession_SessionExisted_ReturnOk()
         {
-            SessionService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var ip = "127.0.0.3";
             var clientId = Guid.NewGuid();
             var CreatedDate = DateTime.Now;
 
-            SessionService.Setup(x => x.GetSession(clientId, id)).Returns(new Session { Id = id, ClientId = clientId, IP = ip, CreatedDate = CreatedDate, Confirmed = true, Enabled = true } );
+            _sessionServiceMock.Setup(x => x.GetSession(clientId, id)).Returns(new Session { Id = id, ClientId = clientId, IP = ip, CreatedDate = CreatedDate, Confirmed = true, Enabled = true } );
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            var controller = new SessionsController(_sessionServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -184,7 +182,7 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var result = actionResult as OkObjectResult;
             var session = result.Value as Api.Areas.V1.Models.Session;
 
-            SessionService.Verify(x => x.GetSession(clientId, id), Times.Once);
+            _sessionServiceMock.Verify(x => x.GetSession(clientId, id), Times.Once);
             Assert.AreEqual(result.StatusCode, 200);
             Assert.AreEqual(session.ClientId, clientId);
             Assert.AreEqual(session.CreatedDate, CreatedDate);
@@ -197,14 +195,12 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void GetSession_SessionNotExisted_ReturnNotFound()
         {
-            SessionService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var clientId = Guid.NewGuid();
 
-            SessionService.Setup(x => x.GetSession(clientId, id)).Returns((Session) null);
+            _sessionServiceMock.Setup(x => x.GetSession(clientId, id)).Returns((Session) null);
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            var controller = new SessionsController(_sessionServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -214,7 +210,7 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var result = actionResult as OkObjectResult;
             var result1 = actionResult as NotFoundResult;
 
-            SessionService.Verify(x => x.GetSession(clientId, id), Times.Once);
+            _sessionServiceMock.Verify(x => x.GetSession(clientId, id), Times.Once);
             Assert.IsTrue(result == null);
             Assert.IsTrue(result1 != null);
         }
@@ -222,15 +218,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void GetSession_ServiceReturnException_ReturnInternalServerError()
         {
-            SessionService.Invocations.Clear();
-
             var clientId = Guid.NewGuid();
             var id = Guid.NewGuid();
             var exceptionMessage = "some exception message";
 
-            SessionService.Setup(x => x.GetSession(clientId, id)).Throws(new Exception(exceptionMessage));
+            _sessionServiceMock.Setup(x => x.GetSession(clientId, id)).Throws(new Exception(exceptionMessage));
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            var controller = new SessionsController(_sessionServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -240,7 +234,7 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var result = actionResult as OkObjectResult;
             var result1 = actionResult as ObjectResult;
 
-            SessionService.Verify(x => x.GetSession(clientId, id), Times.Once);
+            _sessionServiceMock.Verify(x => x.GetSession(clientId, id), Times.Once);
             Assert.IsTrue(result == null);
             Assert.IsTrue(result1 != null);
             Assert.AreEqual(result1.StatusCode, 500);
@@ -250,8 +244,6 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void CreateSession_Success_ReturnCreatedAndCorrect()
         {
-            SessionService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var name = "test";
             var password = "Ss123456";
@@ -261,9 +253,9 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var clientId = Guid.NewGuid();
             var CreatedDate = DateTime.Now;
 
-            SessionService.Setup(x => x.CreateSession(name, password, ip, interval)).Returns(new Session { Id = id, SessionKey = sessionKey, ClientId = clientId, IP = ip, CreatedDate = CreatedDate, Confirmed = true, Enabled = true });
+            _sessionServiceMock.Setup(x => x.CreateSession(name, password, ip, interval)).Returns(new Session { Id = id, SessionKey = sessionKey, ClientId = clientId, IP = ip, CreatedDate = CreatedDate, Confirmed = true, Enabled = true });
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            var controller = new SessionsController(_sessionServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -281,15 +273,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             var result = actionResult as OkObjectResult;
 
-            SessionService.Verify(x => x.CreateSession(name, password, ip, interval), Times.Once);
+            _sessionServiceMock.Verify(x => x.CreateSession(name, password, ip, interval), Times.Once);
             Assert.AreEqual(result.StatusCode, 200);
         }
 
         [TestMethod]
         public void CreateSession_RequestIsEmpty_ReturnBadRequest()
         {
-            SessionService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var name = "test";
             var password = "Ss123456";
@@ -299,9 +289,9 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var clientId = Guid.NewGuid();
             var CreatedDate = DateTime.Now;
 
-            SessionService.Setup(x => x.CreateSession(name, password, ip, interval)).Returns(new Session { Id = id, SessionKey = sessionKey, ClientId = clientId, IP = ip, CreatedDate = CreatedDate, Confirmed = true, Enabled = true });
+            _sessionServiceMock.Setup(x => x.CreateSession(name, password, ip, interval)).Returns(new Session { Id = id, SessionKey = sessionKey, ClientId = clientId, IP = ip, CreatedDate = CreatedDate, Confirmed = true, Enabled = true });
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            var controller = new SessionsController(_sessionServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -315,7 +305,7 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var result = actionResult as OkObjectResult;
             var result1 = actionResult as BadRequestObjectResult;
 
-            SessionService.Verify(x => x.CreateSession(name, password, ip, interval), Times.Never);
+            _sessionServiceMock.Verify(x => x.CreateSession(name, password, ip, interval), Times.Never);
             Assert.AreEqual(result, null);
             Assert.AreEqual(result1.StatusCode, 400);
         }
@@ -323,8 +313,6 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void CreateSession_IPIsEmpty_ReturnBadRequest()
         {
-            SessionService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var name = "test";
             var password = "Ss123456";
@@ -334,9 +322,9 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var clientId = Guid.NewGuid();
             var CreatedDate = DateTime.Now;
 
-            SessionService.Setup(x => x.CreateSession(name, password, ip, interval)).Returns(new Session { Id = id, SessionKey = sessionKey, ClientId = clientId, IP = ip, CreatedDate = CreatedDate, Confirmed = true, Enabled = true });
+            _sessionServiceMock.Setup(x => x.CreateSession(name, password, ip, interval)).Returns(new Session { Id = id, SessionKey = sessionKey, ClientId = clientId, IP = ip, CreatedDate = CreatedDate, Confirmed = true, Enabled = true });
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            var controller = new SessionsController(_sessionServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -354,7 +342,7 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var result = actionResult as OkObjectResult;
             var result1 = actionResult as BadRequestObjectResult;
 
-            SessionService.Verify(x => x.CreateSession(name, password, ip, interval), Times.Never);
+            _sessionServiceMock.Verify(x => x.CreateSession(name, password, ip, interval), Times.Never);
             Assert.AreEqual(result, null);
             Assert.AreEqual(result1.StatusCode, 400);
         }
@@ -362,8 +350,6 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void CreateSession_IPHasInvalidFormat_ReturnBadRequest()
         {
-            SessionService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var name = "test";
             var password = "123456";
@@ -373,9 +359,9 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var clientId = Guid.NewGuid();
             var CreatedDate = DateTime.Now;
 
-            SessionService.Setup(x => x.CreateSession(name, password, ip, interval)).Returns(new Session { Id = id, SessionKey = sessionKey, ClientId = clientId, IP = ip, CreatedDate = CreatedDate, Confirmed = true, Enabled = true });
+            _sessionServiceMock.Setup(x => x.CreateSession(name, password, ip, interval)).Returns(new Session { Id = id, SessionKey = sessionKey, ClientId = clientId, IP = ip, CreatedDate = CreatedDate, Confirmed = true, Enabled = true });
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            var controller = new SessionsController(_sessionServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -394,7 +380,7 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var result = actionResult as OkObjectResult;
             var result1 = actionResult as BadRequestObjectResult;
 
-            SessionService.Verify(x => x.CreateSession(name, password, ip, interval), Times.Never);
+            _sessionServiceMock.Verify(x => x.CreateSession(name, password, ip, interval), Times.Never);
             Assert.AreEqual(result, null);
             Assert.AreEqual(result1.StatusCode, 400);
         }
@@ -402,14 +388,12 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void IsSessionConfirmRequired_SessionExisted_ReturnCorrect()
         {
-            SessionService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var clientId = Guid.NewGuid();
 
-            SessionService.Setup(x => x.IsSessionConfirmRequired(clientId, id)).Returns(true);
+            _sessionServiceMock.Setup(x => x.IsSessionConfirmRequired(clientId, id)).Returns(true);
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            var controller = new SessionsController(_sessionServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -418,7 +402,7 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var actionResult = controller.IsSessionConfirmRequired(id);
             var result = actionResult as OkObjectResult;
  
-            SessionService.Verify(x => x.IsSessionConfirmRequired(clientId, id), Times.Once);
+            _sessionServiceMock.Verify(x => x.IsSessionConfirmRequired(clientId, id), Times.Once);
             Assert.AreEqual(result.StatusCode, 200);
             Assert.AreEqual(result.Value, true);
         }
@@ -426,14 +410,12 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void IsSessionConfirmRequired_SessionNotExisted_ReturnCorrect()
         {
-            SessionService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var clientId = Guid.NewGuid();
 
-            SessionService.Setup(x => x.IsSessionConfirmRequired(clientId, id)).Returns((bool?)null);
+            _sessionServiceMock.Setup(x => x.IsSessionConfirmRequired(clientId, id)).Returns((bool?)null);
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            var controller = new SessionsController(_sessionServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -442,23 +424,21 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var actionResult = controller.IsSessionConfirmRequired(id);
             var result = actionResult as NotFoundResult;
 
-            SessionService.Verify(x => x.IsSessionConfirmRequired(clientId, id), Times.Once);
+            _sessionServiceMock.Verify(x => x.IsSessionConfirmRequired(clientId, id), Times.Once);
             Assert.AreEqual(result.StatusCode, 404);
         }
 
         [TestMethod]
         public void IsSessionConfirmRequired_ServiceReturnException_ReturnInternalServerError()
         {
-            SessionService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var clientId = Guid.NewGuid();
 
             var exceptionMessage = "some exception message";
 
-            SessionService.Setup(x => x.IsSessionConfirmRequired(clientId, id)).Throws(new Exception(exceptionMessage));
+            _sessionServiceMock.Setup(x => x.IsSessionConfirmRequired(clientId, id)).Throws(new Exception(exceptionMessage));
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            var controller = new SessionsController(_sessionServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -469,7 +449,7 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var result = actionResult as OkObjectResult;
             var result1 = actionResult as ObjectResult;
 
-            SessionService.Verify(x => x.IsSessionConfirmRequired(clientId, id), Times.Once);
+            _sessionServiceMock.Verify(x => x.IsSessionConfirmRequired(clientId, id), Times.Once);
             Assert.IsTrue(result == null);
             Assert.IsTrue(result1 != null);
             Assert.AreEqual(result1.StatusCode, 500);
@@ -479,15 +459,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void ConfirmSession_SessionExisted_ReturnCorrect()
         {
-            SessionService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var clientId = Guid.NewGuid();
             var oneTimePassword = "12345677"; 
 
-            SessionService.Setup(x => x.ConfirmSession(clientId, id, oneTimePassword)).Returns(true);
+            _sessionServiceMock.Setup(x => x.ConfirmSession(clientId, id, oneTimePassword)).Returns(true);
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            var controller = new SessionsController(_sessionServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -497,22 +475,20 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             var result = actionResult as OkResult;
 
-            SessionService.Verify(x => x.ConfirmSession(clientId, id, oneTimePassword), Times.Once);
+            _sessionServiceMock.Verify(x => x.ConfirmSession(clientId, id, oneTimePassword), Times.Once);
             Assert.AreEqual(result.StatusCode, 200);
         }
 
         [TestMethod]
         public void ConfirmSession_SessionNotExisted_ReturnCorrect()
         {
-            SessionService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var clientId = Guid.NewGuid();
             var oneTimePassword = "12345677";
 
-            SessionService.Setup(x => x.ConfirmSession(clientId, id, oneTimePassword)).Returns(false);
+            _sessionServiceMock.Setup(x => x.ConfirmSession(clientId, id, oneTimePassword)).Returns(false);
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            var controller = new SessionsController(_sessionServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -522,24 +498,22 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             var result = actionResult as NotFoundResult;
 
-            SessionService.Verify(x => x.ConfirmSession(clientId, id, oneTimePassword), Times.Once);
+            _sessionServiceMock.Verify(x => x.ConfirmSession(clientId, id, oneTimePassword), Times.Once);
             Assert.AreEqual(result.StatusCode, 404);
         }
 
         [TestMethod]
         public void ConfirmSession_ServiceReturnException_ReturnInternalServerError()
         {
-            SessionService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var clientId = Guid.NewGuid();
             var oneTimePassword = "12345677";
 
             var exceptionMessage = "some exception message";
 
-            SessionService.Setup(x => x.ConfirmSession(clientId, id, oneTimePassword)).Throws(new Exception(exceptionMessage));
+            _sessionServiceMock.Setup(x => x.ConfirmSession(clientId, id, oneTimePassword)).Throws(new Exception(exceptionMessage));
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            var controller = new SessionsController(_sessionServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -550,7 +524,7 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var result = actionResult as OkObjectResult;
             var result1 = actionResult as ObjectResult;
 
-            SessionService.Verify(x => x.ConfirmSession(clientId, id, oneTimePassword), Times.Once);
+            _sessionServiceMock.Verify(x => x.ConfirmSession(clientId, id, oneTimePassword), Times.Once);
             Assert.IsTrue(result == null);
             Assert.IsTrue(result1 != null);
             Assert.AreEqual(result1.StatusCode, 500);
@@ -560,14 +534,12 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void DisableSession_SessionExisted_ReturnCorrect()
         {
-            SessionService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var clientId = Guid.NewGuid();
 
-            SessionService.Setup(x => x.DisableSession(clientId, id)).Returns(true);
+            _sessionServiceMock.Setup(x => x.DisableSession(clientId, id)).Returns(true);
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            var controller = new SessionsController(_sessionServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -577,21 +549,19 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             var result = actionResult as OkResult;
 
-            SessionService.Verify(x => x.DisableSession(clientId, id), Times.Once);
+            _sessionServiceMock.Verify(x => x.DisableSession(clientId, id), Times.Once);
             Assert.AreEqual(result.StatusCode, 200);
         }
 
         [TestMethod]
         public void DisableSession_SessionNotExisted_ReturnCorrect()
         {
-            SessionService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var clientId = Guid.NewGuid();
 
-            SessionService.Setup(x => x.DisableSession(clientId, id)).Returns(false);
+            _sessionServiceMock.Setup(x => x.DisableSession(clientId, id)).Returns(false);
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            var controller = new SessionsController(_sessionServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -601,23 +571,21 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             var result = actionResult as NotFoundResult;
 
-            SessionService.Verify(x => x.DisableSession(clientId, id), Times.Once);
+            _sessionServiceMock.Verify(x => x.DisableSession(clientId, id), Times.Once);
             Assert.AreEqual(result.StatusCode, 404);
         }
 
         [TestMethod]
         public void DisableSession_ServiceReturnException_ReturnInternalServerError()
         {
-            SessionService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var clientId = Guid.NewGuid();
 
             var exceptionMessage = "some exception message";
 
-            SessionService.Setup(x => x.DisableSession(clientId, id)).Throws(new Exception(exceptionMessage));
+            _sessionServiceMock.Setup(x => x.DisableSession(clientId, id)).Throws(new Exception(exceptionMessage));
 
-            var controller = new SessionsController(SessionService.Object, Logger.Object)
+            var controller = new SessionsController(_sessionServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -628,7 +596,7 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var result = actionResult as OkObjectResult;
             var result1 = actionResult as ObjectResult;
 
-            SessionService.Verify(x => x.DisableSession(clientId, id), Times.Once);
+            _sessionServiceMock.Verify(x => x.DisableSession(clientId, id), Times.Once);
             Assert.IsTrue(result == null);
             Assert.IsTrue(result1 != null);
             Assert.AreEqual(result1.StatusCode, 500);

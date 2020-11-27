@@ -18,6 +18,14 @@ using RabbitMQ.Client;
 using System.IO;
 using System;
 using System.Reflection;
+using Microsoft.OpenApi.Models;
+using CustomerService.Repositories.Interfaces;
+using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Swashbuckle.AspNetCore.SwaggerUI;
+using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace CustomerService.Api
 {
@@ -37,33 +45,29 @@ namespace CustomerService.Api
 
             var dbOptions = new DbContextOptionsBuilder<CustomerDBContext>();
             dbOptions.UseSqlServer(connectionString);
-            services.AddSingleton<ICustomerDBContextFactory>(t => new CustomerDBContextFactory(dbOptions));
-            services.AddSingleton<ICustomerDBContext, CustomerDBContext>();
-            services.AddSingleton<ISenderProcessor, SenderProcessor>();
-            services.AddSingleton<ISessionRepository, SessionRepository>();
-            services.AddSingleton<IClientRepository, ClientRepository>();
-            services.AddSingleton<ITokenRepository, TokenRepository>();
-            services.AddSingleton<ISessionService, SessionService>();
-            services.AddSingleton<IClientService, ClientService>();
-            services.AddSingleton<ITokenService, TokenService>();
+            services.AddDbContext<CustomerDBContext>(options => options.UseSqlServer(connectionString));
+
+            services.AddTransient<ICustomerDBContext, CustomerDBContext>();
+            services.AddTransient<ISenderProcessor, SenderProcessor>();
+            services.AddTransient<ISessionRepository, SessionRepository>();
+            services.AddTransient<IClientRepository, ClientRepository>();
+            services.AddTransient<ITokenRepository, TokenRepository>();
+            services.AddTransient<ISessionService, SessionService>();
+            services.AddTransient<IClientService, ClientService>();
+            services.AddTransient<ITokenService, TokenService>();
             services.AddSingleton<IGoogleAuthService, GoogleAuthService>();
             services.AddSingleton<IEmailService, EmailService>();
 
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new Info { Title = "Customer API", Version = "v1" });
-                c.AddSecurityDefinition("Bearer", new ApiKeyScheme
+            services.AddControllers()
+                .AddNewtonsoftJson(options =>
                 {
-                    Description = "Authorization header Example: \"Authorization: {token}\"",
-                    Name = "Authorization",
-                    In = "header",
-                    Type = "apiKey"
+                    options.SerializerSettings.Converters.Add(new StringEnumConverter());
+                    options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                    options.SerializerSettings.PreserveReferencesHandling = PreserveReferencesHandling.None;
+                    options.SerializerSettings.ContractResolver = new DefaultContractResolver();
                 });
-                c.AddSecurityRequirement(new Dictionary<string, IEnumerable<string>> { { "Bearer", new string[] { } } });
-                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                c.IncludeXmlComments(xmlPath);
-            });
+            services.AddSwaggerGenNewtonsoftSupport();
 
             services.AddMvc();
 
@@ -85,14 +89,43 @@ namespace CustomerService.Api
                 }
             }
 
-            var serviceProvider = services.BuildServiceProvider();
-            services.AddLogging((builder) => builder.SetMinimumLevel(LogLevel.Warning));
-            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-            loggerFactory.AddNLog(new NLogProviderOptions { CaptureMessageTemplates = true, CaptureMessageProperties = true });
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "IreckonU Self-Service Reports", Version = "v1" });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = JwtBearerDefaults.AuthenticationScheme }
+                        },
+                        new List<string>()
+                    }
+                });
+
+                c.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
+                {
+                    Description = "JWT Authorization header Token. Enter : \"Bearer YourTokenHere\"",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT"
+                });
+            });
+
+            /*NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
             NLog.LogManager.LoadConfiguration("nlog.config");
+            services.AddLogging(loggingBuilder =>
+            {
+                loggingBuilder.ClearProviders();
+                loggingBuilder.AddConfiguration(Configuration.GetSection("Logging"));
+                loggingBuilder.AddNLog(Configuration);
+            });*/
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
@@ -104,16 +137,13 @@ namespace CustomerService.Api
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Customer Service V1");
+                c.DocExpansion(DocExpansion.None);
             });
 
-            loggerFactory.AddNLog();
-            env.ConfigureNLog("nlog.config");
-
-            app.UseMvc(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller}/{id}");
+                endpoints.MapControllers();
             });
         }
     }

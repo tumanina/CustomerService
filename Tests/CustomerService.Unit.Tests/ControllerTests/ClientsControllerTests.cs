@@ -15,24 +15,28 @@ namespace CustomerService.Unit.Tests.ControllerTests
     [TestClass]
     public class ClientsControllerTests
     {
-        private static readonly Mock<IClientService> ClientService = new Mock<IClientService>();
-        private static readonly Mock<ILogger<ClientsController>> Logger = new Mock<ILogger<ClientsController>>();
+        private static readonly Mock<IClientService> _clientServiceMock = new Mock<IClientService>();
+        private static readonly Mock<ILogger<ClientsController>> _loggerMock = new Mock<ILogger<ClientsController>>();
+
+        [TestCleanup]
+        public void TestCleanUp()
+        {
+            _clientServiceMock.Invocations.Clear();
+        }
 
         [TestMethod]
         public void CheckNameAvailability_NameAvailable_ReturnOkWithTrue()
         {
-            ClientService.Invocations.Clear();
-
             var name = "ivanov";
 
-            ClientService.Setup(x => x.CheckNameAvailability(name)).Returns(true);
+            _clientServiceMock.Setup(x => x.CheckNameAvailability(name)).Returns(true);
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object);
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object);
 
             var actionResult = controller.CheckAvailability(name);
             var result = actionResult as OkObjectResult;
 
-            ClientService.Verify(x => x.CheckNameAvailability(name), Times.Once);
+            _clientServiceMock.Verify(x => x.CheckNameAvailability(name), Times.Once);
             Assert.AreEqual(result.StatusCode, 200);
             Assert.AreEqual(result.Value, true);
         }
@@ -40,18 +44,16 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void CheckNameAvailability_NameNotAvailable_ReturnOkWithFalse()
         {
-            ClientService.Invocations.Clear();
-
             var name = "ivanov";
 
-            ClientService.Setup(x => x.CheckNameAvailability(name)).Returns(false);
+            _clientServiceMock.Setup(x => x.CheckNameAvailability(name)).Returns(false);
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object);
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object);
 
             var actionResult = controller.CheckAvailability(name);
             var result = actionResult as OkObjectResult;
 
-            ClientService.Verify(x => x.CheckNameAvailability(name), Times.Once);
+            _clientServiceMock.Verify(x => x.CheckNameAvailability(name), Times.Once);
             Assert.AreEqual(result.StatusCode, 200);
             Assert.AreEqual(result.Value, false);
         }
@@ -59,19 +61,17 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void CheckNameAvailability_RequestIsEmpty_ReturnBadRequest()
         {
-            ClientService.Invocations.Clear();
-
             var name = "ivanov";
 
-            ClientService.Setup(x => x.CheckNameAvailability(name)).Returns(true);
+            _clientServiceMock.Setup(x => x.CheckNameAvailability(name)).Returns(true);
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object);
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object);
 
             var actionResult = controller.CheckAvailability(string.Empty);
             var result = actionResult as OkObjectResult;
             var errorResult = actionResult as BadRequestResult;
 
-            ClientService.Verify(x => x.CheckNameAvailability(name), Times.Never);
+            _clientServiceMock.Verify(x => x.CheckNameAvailability(name), Times.Never);
             Assert.AreEqual(result, null);
             Assert.IsTrue(errorResult != null);
         }
@@ -79,20 +79,18 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void CheckNameAvailability_ServiceReturnException_ReturnServerError()
         {
-            ClientService.Invocations.Clear();
-
             var name = "ivanov";
 
             var exceptionMessage = "some exception message";
-            ClientService.Setup(x => x.CheckNameAvailability(name)).Throws(new Exception(exceptionMessage));
+            _clientServiceMock.Setup(x => x.CheckNameAvailability(name)).Throws(new Exception(exceptionMessage));
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object);
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object);
 
             var actionResult = controller.CheckAvailability(name);
             var result = actionResult as OkObjectResult;
             var result1 = actionResult as ObjectResult;
 
-            ClientService.Verify(x => x.CheckNameAvailability(name), Times.Once);
+            _clientServiceMock.Verify(x => x.CheckNameAvailability(name), Times.Once);
             Assert.IsTrue(result == null);
             Assert.IsTrue(result1 != null);
             Assert.AreEqual(result1.StatusCode, 500);
@@ -102,55 +100,49 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void CheckEmailAvailability_EmailAvailable_ReturnOkWithTrue()
         {
-            ClientService.Invocations.Clear();
-
             var email = "ivanov@mail.ru";
 
-            ClientService.Setup(x => x.CheckEmailAvailability(email)).Returns(true);
+            _clientServiceMock.Setup(x => x.CheckEmailAvailability(email)).Returns(true);
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object);
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object);
 
             var actionResult = controller.CheckAvailability(string.Empty, email);
             var result = actionResult as OkObjectResult;
 
-            ClientService.Verify(x => x.CheckEmailAvailability(email), Times.Once);
+            _clientServiceMock.Verify(x => x.CheckEmailAvailability(email), Times.Once);
             Assert.AreEqual(result.StatusCode, 200);
         }
 
         [TestMethod]
         public void CheckEmailAvailability_EmailNotAvailable_ReturnOkWithFalse()
         {
-            ClientService.Invocations.Clear();
-
             var email = "ivanov@mail.ru";
 
-            ClientService.Setup(x => x.CheckEmailAvailability(email)).Returns(true);
+            _clientServiceMock.Setup(x => x.CheckEmailAvailability(email)).Returns(true);
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object);
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object);
 
             var actionResult = controller.CheckAvailability(string.Empty, email);
             var result = actionResult as OkObjectResult;
 
-            ClientService.Verify(x => x.CheckEmailAvailability(email), Times.Once);
+            _clientServiceMock.Verify(x => x.CheckEmailAvailability(email), Times.Once);
             Assert.AreEqual(result.StatusCode, 200);
         }
 
         [TestMethod]
         public void CheckEmailAvailability_RequestIsEmpty_ReturnBadRequest()
         {
-            ClientService.Invocations.Clear();
-
             var email = "ivanov@mail.ru";
 
-            ClientService.Setup(x => x.CheckEmailAvailability(email)).Returns(true);
+            _clientServiceMock.Setup(x => x.CheckEmailAvailability(email)).Returns(true);
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object);
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object);
 
             var actionResult = controller.CheckAvailability(string.Empty);
             var result = actionResult as OkObjectResult;
             var errorResult = actionResult as BadRequestResult;
 
-            ClientService.Verify(x => x.CheckEmailAvailability(email), Times.Never);
+            _clientServiceMock.Verify(x => x.CheckEmailAvailability(email), Times.Never);
             Assert.AreEqual(result, null);
             Assert.IsTrue(errorResult != null);
         }
@@ -158,20 +150,18 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void CheckEmailAvailability_ServiceReturnException_ReturnServerError()
         {
-            ClientService.Invocations.Clear();
-
             var email = "ivanov@mail.ru";
 
             var exceptionMessage = "some exception message";
-            ClientService.Setup(x => x.CheckEmailAvailability(email)).Throws(new Exception(exceptionMessage));
+            _clientServiceMock.Setup(x => x.CheckEmailAvailability(email)).Throws(new Exception(exceptionMessage));
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object);
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object);
 
             var actionResult = controller.CheckAvailability(string.Empty, email);
             var result = actionResult as OkObjectResult;
             var result1 = actionResult as ObjectResult;
 
-            ClientService.Verify(x => x.CheckEmailAvailability(email), Times.Once);
+            _clientServiceMock.Verify(x => x.CheckEmailAvailability(email), Times.Once);
             Assert.IsTrue(result == null);
             Assert.IsTrue(result1 != null);
             Assert.AreEqual(result1.StatusCode, 500);
@@ -181,8 +171,6 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void CreateClient_Success_ReturnCreatedAndCorrect()
         {
-            ClientService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var email = "email2@mail.ru";
             var name = "name1";
@@ -197,10 +185,10 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             var Client = new Client { Id = id, Name = name, Email = email, PasswordHash = passwordHashed, CreatedDate = createDate, UpdatedDate = updateDate, IsActive = false };
 
-            ClientService.Setup(x => x.CreateClient(email, name, password)).Returns(Client)
+            _clientServiceMock.Setup(x => x.CreateClient(email, name, password)).Returns(Client)
             .Callback((string emailParam, string nameParam, string passwordParam) => { createdEmail = emailParam; createdName = nameParam; createdPassword = passwordParam; });
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object)
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -219,7 +207,7 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             var result = actionResult as CreatedResult;
 
-            ClientService.Verify(x => x.CreateClient(email, name, password), Times.Once);
+            _clientServiceMock.Verify(x => x.CreateClient(email, name, password), Times.Once);
             Assert.AreEqual(result.StatusCode, 201);
             Assert.AreEqual(createdEmail, email);
             Assert.AreEqual(createdName, name);
@@ -229,8 +217,6 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void CreateClient_RequestIsEmpty_ReturnBadRequest()
         {
-            ClientService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var email = "email2@mail.ru";
             var name = "name1";
@@ -245,10 +231,10 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             var Client = new Client { Id = id, Name = name, Email = email, PasswordHash = passwordHashed, CreatedDate = createDate, UpdatedDate = updateDate, IsActive = false };
 
-            ClientService.Setup(x => x.CreateClient(email, name, password)).Returns(Client)
+            _clientServiceMock.Setup(x => x.CreateClient(email, name, password)).Returns(Client)
             .Callback((string emailParam, string nameParam, string passwordParam) => { createdEmail = emailParam; createdName = nameParam; createdPassword = passwordParam; });
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object)
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -263,15 +249,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var result = actionResult as CreatedResult;
             var result1 = actionResult as BadRequestObjectResult;
 
-            ClientService.Verify(x => x.CreateClient(email, name, password), Times.Never);
+            _clientServiceMock.Verify(x => x.CreateClient(email, name, password), Times.Never);
             Assert.AreEqual(result, null);
             Assert.AreEqual(result1.StatusCode, 400);
         }
 
         public void CreateClient_ClientNameIsEmpty_ReturnBadRequest()
         {
-            ClientService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var email = "email2@mail.ru";
             var name = "name1";
@@ -286,9 +270,9 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             var Client = new Client { Id = id, Name = name, Email = email, PasswordHash = passwordHashed, CreatedDate = createDate, UpdatedDate = updateDate, IsActive = false };
 
-            ClientService.Setup(x => x.CreateClient(email, name, password)).Returns(Client);
+            _clientServiceMock.Setup(x => x.CreateClient(email, name, password)).Returns(Client);
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object)
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -307,15 +291,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var result = actionResult as CreatedResult;
             var result1 = actionResult as BadRequestObjectResult;
 
-            ClientService.Verify(x => x.CreateClient(email, name, password), Times.Never);
+            _clientServiceMock.Verify(x => x.CreateClient(email, name, password), Times.Never);
             Assert.AreEqual(result, null);
             Assert.AreEqual(result1.StatusCode, 400);
         }
 
         public void CreateClient_ClientNameTooLong_ReturnBadRequest()
         {
-            ClientService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var email = "email2@mail.ru";
             var name = "name1";
@@ -330,9 +312,9 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             var Client = new Client { Id = id, Name = name, Email = email, PasswordHash = passwordHashed, CreatedDate = createDate, UpdatedDate = updateDate, IsActive = false };
 
-            ClientService.Setup(x => x.CreateClient(email, name, password)).Returns(Client);
+            _clientServiceMock.Setup(x => x.CreateClient(email, name, password)).Returns(Client);
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object)
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -352,15 +334,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var result = actionResult as CreatedResult;
             var result1 = actionResult as BadRequestObjectResult;
 
-            ClientService.Verify(x => x.CreateClient(email, name, password), Times.Never);
+            _clientServiceMock.Verify(x => x.CreateClient(email, name, password), Times.Never);
             Assert.AreEqual(result, null);
             Assert.AreEqual(result1.StatusCode, 400);
         }
 
         public void CreateClient_PasswordIsEmpty_ReturnBadRequest()
         {
-            ClientService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var email = "email2@mail.ru";
             var name = "name1";
@@ -375,9 +355,9 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             var Client = new Client { Id = id, Name = name, Email = email, PasswordHash = passwordHashed, CreatedDate = createDate, UpdatedDate = updateDate, IsActive = false };
 
-            ClientService.Setup(x => x.CreateClient(email, name, password)).Returns(Client);
+            _clientServiceMock.Setup(x => x.CreateClient(email, name, password)).Returns(Client);
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object)
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -396,15 +376,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var result = actionResult as CreatedResult;
             var result1 = actionResult as BadRequestObjectResult;
 
-            ClientService.Verify(x => x.CreateClient(email, name, password), Times.Never);
+            _clientServiceMock.Verify(x => x.CreateClient(email, name, password), Times.Never);
             Assert.AreEqual(result, null);
             Assert.AreEqual(result1.StatusCode, 400);
         }
 
         public void CreateClient_EmailIsEmpty_ReturnBadRequest()
         {
-            ClientService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var email = "email2@mail.ru";
             var name = "name1";
@@ -419,9 +397,9 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             var Client = new Client { Id = id, Name = name, Email = email, PasswordHash = passwordHashed, CreatedDate = createDate, UpdatedDate = updateDate, IsActive = false };
 
-            ClientService.Setup(x => x.CreateClient(email, name, password)).Returns(Client);
+            _clientServiceMock.Setup(x => x.CreateClient(email, name, password)).Returns(Client);
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object)
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -440,15 +418,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var result = actionResult as CreatedResult;
             var result1 = actionResult as BadRequestObjectResult;
 
-            ClientService.Verify(x => x.CreateClient(email, name, password), Times.Never);
+            _clientServiceMock.Verify(x => x.CreateClient(email, name, password), Times.Never);
             Assert.AreEqual(result, null);
             Assert.AreEqual(result1.StatusCode, 400);
         }
 
         public void CreateClient_EmailHasInvalidFormat_ReturnBadRequest()
         {
-            ClientService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var email = "email2";
             var name = "name1";
@@ -463,9 +439,9 @@ namespace CustomerService.Unit.Tests.ControllerTests
 
             var Client = new Client { Id = id, Name = name, Email = email, PasswordHash = passwordHashed, CreatedDate = createDate, UpdatedDate = updateDate, IsActive = false };
 
-            ClientService.Setup(x => x.CreateClient(email, name, password)).Returns(Client);
+            _clientServiceMock.Setup(x => x.CreateClient(email, name, password)).Returns(Client);
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object)
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -485,7 +461,7 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var result = actionResult as CreatedResult;
             var result1 = actionResult as BadRequestObjectResult;
 
-            ClientService.Verify(x => x.CreateClient(email, name, password), Times.Never);
+            _clientServiceMock.Verify(x => x.CreateClient(email, name, password), Times.Never);
             Assert.AreEqual(result, null);
             Assert.AreEqual(result1.StatusCode, 400);
         }
@@ -493,15 +469,13 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void CreateClient_ServiceReturnNull_ReturnInternalServerError()
         {
-            ClientService.Invocations.Clear();
-
             var email = "email2@mail.ru";
             var name = "name1";
             var password = "Sshfgjk123654";
 
-            ClientService.Setup(x => x.CreateClient(email, name, password)).Returns((Client)null);
+            _clientServiceMock.Setup(x => x.CreateClient(email, name, password)).Returns((Client)null);
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object)
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -521,7 +495,7 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var result = actionResult as CreatedResult;
             var result1 = actionResult as ObjectResult;
 
-            ClientService.Verify(x => x.CreateClient(email, name, password), Times.Once);
+            _clientServiceMock.Verify(x => x.CreateClient(email, name, password), Times.Once);
             Assert.AreEqual(result, null);
             Assert.AreEqual(result1.StatusCode, 500);
         }
@@ -529,17 +503,15 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void CreateClient_ServiceReturnException_ReturnInternalServerError()
         {
-            ClientService.Invocations.Clear();
-
             var email = "email2@mail.ru";
             var name = "name1";
             var password = "Sshfgjk123654";
 
             var exceptionMessage = "any exception message";
 
-            ClientService.Setup(x => x.CreateClient(email, name, password)).Throws(new Exception(exceptionMessage));
+            _clientServiceMock.Setup(x => x.CreateClient(email, name, password)).Throws(new Exception(exceptionMessage));
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object)
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -559,7 +531,7 @@ namespace CustomerService.Unit.Tests.ControllerTests
             var result = actionResult as CreatedResult;
             var result1 = actionResult as ObjectResult;
 
-            ClientService.Verify(x => x.CreateClient(email, name, password), Times.Once);
+            _clientServiceMock.Verify(x => x.CreateClient(email, name, password), Times.Once);
             Assert.AreEqual(result, null);
             Assert.AreEqual(result1.StatusCode, 500);
         }
@@ -567,38 +539,34 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void ActivateClient_ClientExisted_ReturnOk()
         {
-            ClientService.Invocations.Clear();
-
             var activationCode = "12345qwerty78906yuiopsdfg";
 
-            ClientService.Setup(x => x.ActivateClient(activationCode)).Returns(true);
+            _clientServiceMock.Setup(x => x.ActivateClient(activationCode)).Returns(true);
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object);
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object);
 
             var actionResult = controller.ActivateClient(activationCode);
             var result = actionResult as OkResult;
 
-            ClientService.Verify(x => x.ActivateClient(activationCode), Times.Once);
+            _clientServiceMock.Verify(x => x.ActivateClient(activationCode), Times.Once);
             Assert.AreEqual(result.StatusCode, 200);
         }
 
         [TestMethod]
         public void ActivateClient_ClientNotExisted_ReturnNotFound()
         {
-            ClientService.Invocations.Clear();
-
             var activationCode = "12345qwerty78906yuiopsdfg";
 
-            ClientService.Setup(x => x.ActivateClient(activationCode)).Returns(false);
+            _clientServiceMock.Setup(x => x.ActivateClient(activationCode)).Returns(false);
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object);
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object);
 
             var actionResult = controller.ActivateClient(activationCode);
             var result = actionResult as OkObjectResult;
             var result1 = actionResult as NotFoundResult;
 
 
-            ClientService.Verify(x => x.ActivateClient(activationCode), Times.Once);
+            _clientServiceMock.Verify(x => x.ActivateClient(activationCode), Times.Once);
             Assert.AreEqual(result, null);
             Assert.AreEqual(result1.StatusCode, 404);
         }
@@ -606,20 +574,18 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void ActivateClient_ServiceReturnException_ReturnInternalServerError()
         {
-            ClientService.Invocations.Clear();
-
             var activationCode = "12345qwerty78906yuiopsdfg";
             var exceptionMessage = "any exception message";
 
-            ClientService.Setup(x => x.ActivateClient(activationCode)).Throws(new Exception(exceptionMessage));
+            _clientServiceMock.Setup(x => x.ActivateClient(activationCode)).Throws(new Exception(exceptionMessage));
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object);
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object);
 
             var actionResult = controller.ActivateClient(activationCode);
             var result = actionResult as OkObjectResult;
             var result1 = actionResult as ObjectResult;
 
-            ClientService.Verify(x => x.ActivateClient(activationCode), Times.Once);
+            _clientServiceMock.Verify(x => x.ActivateClient(activationCode), Times.Once);
             Assert.AreEqual(result, null);
             Assert.AreEqual(result1.StatusCode, 500);
         }
@@ -627,38 +593,34 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void SendActivationCode_ClientExisted_ReturnOk()
         {
-            ClientService.Invocations.Clear();
-
             var email = "email2@mail.ru";
 
-            ClientService.Setup(x => x.SendActivationCode(email)).Returns(true);
+            _clientServiceMock.Setup(x => x.SendActivationCode(email)).Returns(true);
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object);
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object);
 
             var actionResult = controller.SendActivationCode(email);
             var result = actionResult as OkResult;
 
-            ClientService.Verify(x => x.SendActivationCode(email), Times.Once);
+            _clientServiceMock.Verify(x => x.SendActivationCode(email), Times.Once);
             Assert.AreEqual(result.StatusCode, 200);
         }
 
         [TestMethod]
         public void SendActivationCode_ClientNotExisted_ReturnNotFound()
         {
-            ClientService.Invocations.Clear();
-
             var email = "email2@mail.ru";
 
-            ClientService.Setup(x => x.SendActivationCode(email)).Returns(false);
+            _clientServiceMock.Setup(x => x.SendActivationCode(email)).Returns(false);
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object);
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object);
 
             var actionResult = controller.SendActivationCode(email);
             var result = actionResult as OkObjectResult;
             var result1 = actionResult as NotFoundResult;
 
 
-            ClientService.Verify(x => x.SendActivationCode(email), Times.Once);
+            _clientServiceMock.Verify(x => x.SendActivationCode(email), Times.Once);
             Assert.AreEqual(result, null);
             Assert.AreEqual(result1.StatusCode, 404);
         }
@@ -666,19 +628,17 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void SendActivationCode_EmailHasInvalidFormat_ReturnOk()
         {
-            ClientService.Invocations.Clear();
-
             var email = "email2";
 
-            ClientService.Setup(x => x.SendActivationCode(email)).Returns(true);
+            _clientServiceMock.Setup(x => x.SendActivationCode(email)).Returns(true);
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object);
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object);
 
             var actionResult = controller.SendActivationCode(email);
             var result = actionResult as OkResult;
             var result1 = actionResult as BadRequestObjectResult;
 
-            ClientService.Verify(x => x.SendActivationCode(email), Times.Never);
+            _clientServiceMock.Verify(x => x.SendActivationCode(email), Times.Never);
             Assert.AreEqual(result, null);
             Assert.AreEqual(result1.StatusCode, 400);
         }
@@ -686,20 +646,18 @@ namespace CustomerService.Unit.Tests.ControllerTests
         [TestMethod]
         public void SendActivationCode_ServiceReturnException_ReturnInternalServerError()
         {
-            ClientService.Invocations.Clear();
-
             var email = "email2@mail.ru";
             var exceptionMessage = "any exception message";
 
-            ClientService.Setup(x => x.SendActivationCode(email)).Throws(new Exception(exceptionMessage));
+            _clientServiceMock.Setup(x => x.SendActivationCode(email)).Throws(new Exception(exceptionMessage));
 
-            var controller = new ClientsController(ClientService.Object, Logger.Object);
+            var controller = new ClientsController(_clientServiceMock.Object, _loggerMock.Object);
 
             var actionResult = controller.SendActivationCode(email);
             var result = actionResult as OkObjectResult;
             var result1 = actionResult as ObjectResult;
 
-            ClientService.Verify(x => x.SendActivationCode(email), Times.Once);
+            _clientServiceMock.Verify(x => x.SendActivationCode(email), Times.Once);
             Assert.AreEqual(result, null);
             Assert.AreEqual(result1.StatusCode, 500);
         }

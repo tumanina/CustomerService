@@ -3,166 +3,140 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using CustomerService.Repositories.Entities;
 using CustomerService.Repositories.DAL;
+using CustomerService.Repositories.Interfaces;
 
 namespace CustomerService.Repositories
 {
     public class ClientRepository : IClientRepository
     {
-        private readonly ICustomerDBContextFactory _factory;
+        private readonly ICustomerDBContext _dbContext;
 
-        public ClientRepository(ICustomerDBContextFactory factory)
+        public ClientRepository(ICustomerDBContext dbContext)
         {
-            _factory = factory;
+            _dbContext = dbContext;
         }
 
         public Client GetClient(Guid id)
         {
-            using (var context = _factory.CreateDBContext())
-            {
-                return context.Client.AsNoTracking().FirstOrDefault(t => t.Id == id);
-            }
+            return _dbContext.Client.AsNoTracking().FirstOrDefault(t => t.Id == id);
         }
 
         public Client GetClientByName(string name)
         {
-            using (var context = _factory.CreateDBContext())
-            {
-                return context.Client.AsNoTracking().FirstOrDefault(t => t.Name == name);
-            }
+            return _dbContext.Client.AsNoTracking().FirstOrDefault(t => t.Name == name);
         }
 
         public Client GetClientByEmail(string email)
         {
-            using (var context = _factory.CreateDBContext())
-            {
-                return context.Client.AsNoTracking().FirstOrDefault(t => t.Email == email);
-            }
+            return _dbContext.Client.AsNoTracking().FirstOrDefault(t => t.Email == email);
         }
 
         public Client CreateClient(string email, string name, string passwordHash, string activationCode)
         {
-            using (var context = _factory.CreateDBContext())
+            var clients = _dbContext.Set<Client>();
+
+            var client = new Client
             {
-                var clients = context.Set<Client>();
+                Name = name,
+                Email = email,
+                PasswordHash = passwordHash,
+                ActivationCode = activationCode,
+                IsActive = false,
+                CreatedDate = DateTime.UtcNow,
+                UpdatedDate = DateTime.UtcNow
+            };
 
-                var client = new Client
-                {
-                    Name = name,
-                    Email = email,
-                    PasswordHash = passwordHash,
-                    ActivationCode = activationCode,
-                    IsActive = false,
-                    CreatedDate = DateTime.UtcNow,
-                    UpdatedDate = DateTime.UtcNow
-                };
+            clients.Add(client);
+            _dbContext.SaveChanges();
 
-                clients.Add(client);
-                context.SaveChanges();
-
-                return client;
-            }
+            return client;
         }
 
         public Client UpdateClient(Guid id, string email, string name)
         {
-            using (var context = _factory.CreateDBContext())
+            var result = _dbContext.Client.SingleOrDefault(b => b.Id == id);
+            if (result != null)
             {
-                var result = context.Client.SingleOrDefault(b => b.Id == id);
-                if (result != null)
-                {
-                    result.Name = name;
-                    result.Email = email;
-                    result.UpdatedDate = DateTime.UtcNow;
-                    context.SaveChanges();
-                }
-                else
-                {
-                    return null;
-                }
-
-                return result;
+                result.Name = name;
+                result.Email = email;
+                result.UpdatedDate = DateTime.UtcNow;
+                _dbContext.SaveChanges();
             }
+            else
+            {
+                return null;
+            }
+
+            return result;
         }
 
         public bool ActivateClient(string activateCode)
         {
-            using (var context = _factory.CreateDBContext())
+            var result = _dbContext.Client.SingleOrDefault(b => b.ActivationCode == activateCode);
+            if (result != null)
             {
-                var result = context.Client.SingleOrDefault(b => b.ActivationCode == activateCode);
-                if (result != null)
-                {
-                    result.IsActive = true;
-                    result.UpdatedDate = DateTime.UtcNow;
-                    context.SaveChanges();
-                }
-                else
-                {
-                    return false;
-                }
-
-                return true;
+                result.IsActive = true;
+                result.UpdatedDate = DateTime.UtcNow;
+                _dbContext.SaveChanges();
             }
+            else
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public bool UpdateGoogleAuthCode(Guid id, string authCode)
         {
-            using (var context = _factory.CreateDBContext())
+            var result = _dbContext.Client.SingleOrDefault(b => b.Id == id);
+            if (result != null)
             {
-                var result = context.Client.SingleOrDefault(b => b.Id == id);
-                if (result != null)
-                {
-                    result.GoogleAuthCode = authCode;
-                    result.GoogleAuthActive = false;
-                    result.UpdatedDate = DateTime.UtcNow;
-                    context.SaveChanges();
-                }
-                else
-                {
-                    return false;
-                }
-
-                return true;
+                result.GoogleAuthCode = authCode;
+                result.GoogleAuthActive = false;
+                result.UpdatedDate = DateTime.UtcNow;
+                _dbContext.SaveChanges();
             }
+            else
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public bool ActivateGoogleAuthCode(Guid id)
         {
-            using (var context = _factory.CreateDBContext())
+            var result = _dbContext.Client.SingleOrDefault(b => b.Id == id);
+            if (result != null)
             {
-                var result = context.Client.SingleOrDefault(b => b.Id == id);
-                if (result != null)
-                {
-                    result.GoogleAuthActive = true;
-                    result.UpdatedDate = DateTime.UtcNow;
-                    context.SaveChanges();
-                }
-                else
-                {
-                    return false;
-                }
-
-                return true;
+                result.GoogleAuthActive = true;
+                result.UpdatedDate = DateTime.UtcNow;
+                _dbContext.SaveChanges();
             }
+            else
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public bool DeactivateGoogleAuthCode(Guid id)
         {
-            using (var context = _factory.CreateDBContext())
+            var result = _dbContext.Client.SingleOrDefault(b => b.Id == id);
+            if (result != null)
             {
-                var result = context.Client.SingleOrDefault(b => b.Id == id);
-                if (result != null)
-                {
-                    result.GoogleAuthActive = false;
-                    result.UpdatedDate = DateTime.UtcNow;
-                    context.SaveChanges();
-                }
-                else
-                {
-                    return false;
-                }
-
-                return true;
+                result.GoogleAuthActive = false;
+                result.UpdatedDate = DateTime.UtcNow;
+                _dbContext.SaveChanges();
             }
+            else
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }
