@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using CustomerService.Repositories.Entities;
 
-namespace CustomerService.Repositories
+namespace CustomerService.Repositories.Interfaces
 {
     public interface ITokenRepository
     {

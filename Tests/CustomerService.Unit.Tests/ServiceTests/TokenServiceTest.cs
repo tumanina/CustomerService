@@ -4,8 +4,8 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using CustomerService.Business;
-using CustomerService.Repositories;
 using TokenEntity = CustomerService.Repositories.Entities.Token;
+using CustomerService.Repositories.Interfaces;
 
 namespace CustomerService.Unit.Tests.ServiceTests
 {

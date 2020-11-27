@@ -14,7 +14,6 @@ namespace CustomerService.Unit.Tests.RepositoryTests
     public class TokenRepositoryTest
     {
         private static readonly Mock<ICustomerDBContext> CustomerDBContext = new Mock<ICustomerDBContext>();
-        private static readonly Mock<ICustomerDBContextFactory> CustomerDBContextFactory = new Mock<ICustomerDBContextFactory>();
 
         [TestMethod]
         public void GetTokens_TokensExisted_UseDbContextReturnCorrect()
@@ -50,9 +49,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Token>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
             CustomerDBContext.Setup(x => x.Token).Returns(mockSet.Object);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new TokenRepository(CustomerDBContextFactory.Object);
+            var repository = new TokenRepository(CustomerDBContext.Object);
 
             var result = repository.GetTokens(clientId);
 
@@ -97,9 +95,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Token>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
             CustomerDBContext.Setup(x => x.Token).Returns(mockSet.Object);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new TokenRepository(CustomerDBContextFactory.Object);
+            var repository = new TokenRepository(CustomerDBContext.Object);
 
             var result = repository.GetTokens(clientId, true);
 
@@ -126,9 +123,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Token>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
             CustomerDBContext.Setup(x => x.Token).Returns(mockSet.Object);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new TokenRepository(CustomerDBContextFactory.Object);
+            var repository = new TokenRepository(CustomerDBContext.Object);
 
             var result = repository.GetTokens(clientId);
 
@@ -178,9 +174,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             CustomerDBContext.Setup(x => x.Token).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.Set<Token>()).Returns(mockSet0.Object);
             CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new TokenRepository(CustomerDBContextFactory.Object);
+            var repository = new TokenRepository(CustomerDBContext.Object);
 
             var result = repository.CreateToken(clientId, ip, authMethod);
 
@@ -229,9 +224,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             CustomerDBContext.Setup(x => x.Token).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.Set<Token>()).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new TokenRepository(CustomerDBContextFactory.Object);
+            var repository = new TokenRepository(CustomerDBContext.Object);
 
             var result = repository.UpdateActive(id2, true);
 
@@ -276,9 +270,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             CustomerDBContext.Setup(x => x.Token).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.Set<Token>()).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new TokenRepository(CustomerDBContextFactory.Object);
+            var repository = new TokenRepository(CustomerDBContext.Object);
 
             var result = repository.UpdateActive(id2, false);
 

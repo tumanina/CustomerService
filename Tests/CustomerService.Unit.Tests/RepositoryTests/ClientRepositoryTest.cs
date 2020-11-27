@@ -14,7 +14,6 @@ namespace CustomerService.Unit.Tests.RepositoryTests
     public class ClientRepositoryTest
     {
         private static readonly Mock<ICustomerDBContext> CustomerDBContext = new Mock<ICustomerDBContext>();
-        private static readonly Mock<ICustomerDBContextFactory> CustomerDBContextFactory = new Mock<ICustomerDBContextFactory>();
 
         [TestMethod]
         public void GetClientByName_ClientExisted_UseDbContextReturnCorrect()
@@ -50,9 +49,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
             CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new ClientRepository(CustomerDBContextFactory.Object);
+            var repository = new ClientRepository(CustomerDBContext.Object);
 
             var result = repository.GetClientByName(name2);
 
@@ -102,9 +100,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
             CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new ClientRepository(CustomerDBContextFactory.Object);
+            var repository = new ClientRepository(CustomerDBContext.Object);
 
             var result = repository.GetClientByName(name3);
 
@@ -146,9 +143,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
             CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new ClientRepository(CustomerDBContextFactory.Object);
+            var repository = new ClientRepository(CustomerDBContext.Object);
 
             var result = repository.GetClientByEmail(email2);
 
@@ -198,9 +194,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
             CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new ClientRepository(CustomerDBContextFactory.Object);
+            var repository = new ClientRepository(CustomerDBContext.Object);
 
             var result = repository.GetClientByEmail(email3);
 
@@ -255,9 +250,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet0.Object);
             CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new ClientRepository(CustomerDBContextFactory.Object);
+            var repository = new ClientRepository(CustomerDBContext.Object);
 
             var result = repository.CreateClient(email, name, password, activationCode);
 
@@ -306,9 +300,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new ClientRepository(CustomerDBContextFactory.Object);
+            var repository = new ClientRepository(CustomerDBContext.Object);
 
             var result = repository.ActivateClient(activationCode1);
 
@@ -355,9 +348,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new ClientRepository(CustomerDBContextFactory.Object);
+            var repository = new ClientRepository(CustomerDBContext.Object);
 
             var result = repository.ActivateClient(activationCode3);
 
@@ -407,9 +399,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new ClientRepository(CustomerDBContextFactory.Object);
+            var repository = new ClientRepository(CustomerDBContext.Object);
 
             var result = repository.UpdateGoogleAuthCode(id2, authCode3);
 
@@ -458,9 +449,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new ClientRepository(CustomerDBContextFactory.Object);
+            var repository = new ClientRepository(CustomerDBContext.Object);
 
             var result = repository.UpdateGoogleAuthCode(Guid.NewGuid(), authCode3);
 
@@ -506,9 +496,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new ClientRepository(CustomerDBContextFactory.Object);
+            var repository = new ClientRepository(CustomerDBContext.Object);
 
             var result = repository.ActivateGoogleAuthCode(id2);
 
@@ -554,9 +543,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new ClientRepository(CustomerDBContextFactory.Object);
+            var repository = new ClientRepository(CustomerDBContext.Object);
 
             var result = repository.ActivateGoogleAuthCode(Guid.NewGuid());
 
@@ -602,9 +590,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new ClientRepository(CustomerDBContextFactory.Object);
+            var repository = new ClientRepository(CustomerDBContext.Object);
 
             var result = repository.DeactivateGoogleAuthCode(id2);
 
@@ -650,9 +637,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new ClientRepository(CustomerDBContextFactory.Object);
+            var repository = new ClientRepository(CustomerDBContext.Object);
 
             var result = repository.DeactivateGoogleAuthCode(Guid.NewGuid());
 

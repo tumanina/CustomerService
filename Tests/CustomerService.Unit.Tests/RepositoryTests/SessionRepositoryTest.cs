@@ -14,7 +14,6 @@ namespace CustomerService.Unit.Tests.RepositoryTests
     public class SessionRepositoryTest
     {
         private static readonly Mock<ICustomerDBContext> CustomerDBContext = new Mock<ICustomerDBContext>();
-        private static readonly Mock<ICustomerDBContextFactory> CustomerDBContextFactory = new Mock<ICustomerDBContextFactory>();
 
         [TestMethod]
         public void GettSessions_SessionsExisted_UseDbContextReturnCorrect()
@@ -56,9 +55,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Session>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
             CustomerDBContext.Setup(x => x.Session).Returns(mockSet.Object);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new SessionRepository(CustomerDBContextFactory.Object);
+            var repository = new SessionRepository(CustomerDBContext.Object);
 
             var result = repository.GetSessions(clientId, false);
 
@@ -120,9 +118,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Session>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
             CustomerDBContext.Setup(x => x.Session).Returns(mockSet.Object);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new SessionRepository(CustomerDBContextFactory.Object);
+            var repository = new SessionRepository(CustomerDBContext.Object);
 
             var result = repository.GetSessions(clientId, true);
 
@@ -153,9 +150,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Session>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
             CustomerDBContext.Setup(x => x.Session).Returns(mockSet.Object);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new SessionRepository(CustomerDBContextFactory.Object);
+            var repository = new SessionRepository(CustomerDBContext.Object);
 
             var result = repository.GetSessions(clientId);
 
@@ -207,9 +203,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Session>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
             CustomerDBContext.Setup(x => x.Session).Returns(mockSet.Object);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new SessionRepository(CustomerDBContextFactory.Object);
+            var repository = new SessionRepository(CustomerDBContext.Object);
 
             var result = repository.GetSession(clientId, id2);
 
@@ -259,7 +254,7 @@ namespace CustomerService.Unit.Tests.RepositoryTests
 
             CustomerDBContext.Setup(x => x.Session).Returns(mockSet.Object);
 
-            var repository = new SessionRepository(CustomerDBContextFactory.Object);
+            var repository = new SessionRepository(CustomerDBContext.Object);
 
             var result = repository.GetSession(clientId, id2);
 
@@ -307,9 +302,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Session>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
             CustomerDBContext.Setup(x => x.Session).Returns(mockSet.Object);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new SessionRepository(CustomerDBContextFactory.Object);
+            var repository = new SessionRepository(CustomerDBContext.Object);
 
             var result = repository.GetSessionByKey(key2);
 
@@ -359,7 +353,7 @@ namespace CustomerService.Unit.Tests.RepositoryTests
 
             CustomerDBContext.Setup(x => x.Session).Returns(mockSet.Object);
 
-            var repository = new SessionRepository(CustomerDBContextFactory.Object);
+            var repository = new SessionRepository(CustomerDBContext.Object);
 
             var result = repository.GetSessionByKey(key2);
 
@@ -410,9 +404,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             CustomerDBContext.Setup(x => x.Session).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.Set<Session>()).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new SessionRepository(CustomerDBContextFactory.Object);
+            var repository = new SessionRepository(CustomerDBContext.Object);
 
             var result = repository.ConfirmSession(clientId, id1);
 
@@ -459,9 +452,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             CustomerDBContext.Setup(x => x.Session).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.Set<Session>()).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new SessionRepository(CustomerDBContextFactory.Object);
+            var repository = new SessionRepository(CustomerDBContext.Object);
 
             var result = repository.ConfirmSession(clientId, id2);
 
@@ -512,9 +504,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             CustomerDBContext.Setup(x => x.Session).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.Set<Session>()).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new SessionRepository(CustomerDBContextFactory.Object);
+            var repository = new SessionRepository(CustomerDBContext.Object);
 
             var result = repository.DisableSession(clientId, id1);
 
@@ -559,9 +550,8 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             CustomerDBContext.Setup(x => x.Session).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.Set<Session>()).Returns(mockSet.Object);
             CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
-            CustomerDBContextFactory.Setup(x => x.CreateDBContext()).Returns(CustomerDBContext.Object);
 
-            var repository = new SessionRepository(CustomerDBContextFactory.Object);
+            var repository = new SessionRepository(CustomerDBContext.Object);
 
             var result = repository.DisableSession(clientId, id2);
 

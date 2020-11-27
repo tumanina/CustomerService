@@ -8,6 +8,7 @@ using CustomerService.Business.Models;
 using CustomerService.Repositories;
 using SessionEntity = CustomerService.Repositories.Entities.Session;
 using CustomerService.Core;
+using CustomerService.Repositories.Interfaces;
 
 namespace CustomerService.Unit.Tests.ServiceTests
 {

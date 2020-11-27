@@ -1,7 +1,7 @@
 ﻿using CustomerService.Repositories.Entities;
 using System;
 
-namespace CustomerService.Repositories
+namespace CustomerService.Repositories.Interfaces
 {
     public interface IClientRepository
     {

@@ -2,9 +2,9 @@ using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using CustomerService.Business;
-using CustomerService.Repositories;
 using ClientEntity = CustomerService.Repositories.Entities.Client;
 using CustomerService.Business.Models;
+using CustomerService.Repositories.Interfaces;
 
 namespace CustomerService.Unit.Tests.ServiceTests
 {

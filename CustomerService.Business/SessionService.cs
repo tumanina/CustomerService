@@ -1,7 +1,7 @@
 ﻿using System;
 using CustomerService.Business.Models;
 using CustomerService.Core;
-using CustomerService.Repositories;
+using CustomerService.Repositories.Interfaces;
 
 namespace CustomerService.Business
 {

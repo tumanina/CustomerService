@@ -3,7 +3,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using CustomerService.Business.Models;
-using CustomerService.Repositories;
+using CustomerService.Repositories.Interfaces;
 
 namespace CustomerService.Business
 {
