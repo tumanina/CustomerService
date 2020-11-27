@@ -13,13 +13,17 @@ namespace CustomerService.Unit.Tests.RepositoryTests
     [TestClass]
     public class SessionRepositoryTest
     {
-        private static readonly Mock<ICustomerDBContext> CustomerDBContext = new Mock<ICustomerDBContext>();
+        private static readonly Mock<ICustomerDBContext> _customerDBContextMock = new Mock<ICustomerDBContext>();
+
+        [TestCleanup]
+        public void TestCleanUp()
+        {
+            _customerDBContextMock.Invocations.Clear();
+        }
 
         [TestMethod]
         public void GettSessions_SessionsExisted_UseDbContextReturnCorrect()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var mockSet = new Mock<DbSet<Session>>();
 
             var clientId = Guid.NewGuid();
@@ -54,13 +58,13 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Session>>().Setup(m => m.ElementType).Returns(data.ElementType);
             mockSet.As<IQueryable<Session>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
-            CustomerDBContext.Setup(x => x.Session).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Session).Returns(mockSet.Object);
 
-            var repository = new SessionRepository(CustomerDBContext.Object);
+            var repository = new SessionRepository(_customerDBContextMock.Object);
 
             var result = repository.GetSessions(clientId, false);
 
-            CustomerDBContext.Verify(x => x.Session, Times.Once);
+            _customerDBContextMock.Verify(x => x.Session, Times.Once);
             Assert.AreEqual(result.PageCount, 1);
             Assert.AreEqual(result.PageIndex, 1);
             Assert.AreEqual(result.PageSize, 20);
@@ -74,8 +78,6 @@ namespace CustomerService.Unit.Tests.RepositoryTests
         [TestMethod]
         public void GettSessionsOnlyActive_SessionsExisted_UseDbContextReturnCorrect()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var mockSet = new Mock<DbSet<Session>>();
 
             var clientId = Guid.NewGuid();
@@ -117,13 +119,13 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Session>>().Setup(m => m.ElementType).Returns(data.ElementType);
             mockSet.As<IQueryable<Session>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
-            CustomerDBContext.Setup(x => x.Session).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Session).Returns(mockSet.Object);
 
-            var repository = new SessionRepository(CustomerDBContext.Object);
+            var repository = new SessionRepository(_customerDBContextMock.Object);
 
             var result = repository.GetSessions(clientId, true);
 
-            CustomerDBContext.Verify(x => x.Session, Times.Once);
+            _customerDBContextMock.Verify(x => x.Session, Times.Once);
             Assert.AreEqual(result.PageCount, 1);
             Assert.AreEqual(result.PageIndex, 1);
             Assert.AreEqual(result.PageSize, 20);
@@ -136,8 +138,6 @@ namespace CustomerService.Unit.Tests.RepositoryTests
         [TestMethod]
         public void GetSessions_SessionsNotExisted_UseDbContextReturnCorrect()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var clientId = Guid.NewGuid();
 
             var mockSet = new Mock<DbSet<Session>>();
@@ -149,13 +149,13 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Session>>().Setup(m => m.ElementType).Returns(data.ElementType);
             mockSet.As<IQueryable<Session>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
-            CustomerDBContext.Setup(x => x.Session).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Session).Returns(mockSet.Object);
 
-            var repository = new SessionRepository(CustomerDBContext.Object);
+            var repository = new SessionRepository(_customerDBContextMock.Object);
 
             var result = repository.GetSessions(clientId);
 
-            CustomerDBContext.Verify(x => x.Session, Times.Once);
+            _customerDBContextMock.Verify(x => x.Session, Times.Once);
             Assert.AreEqual(result.PageCount, 0);
             Assert.AreEqual(result.PageIndex, 1);
             Assert.AreEqual(result.PageSize, 20);
@@ -166,8 +166,6 @@ namespace CustomerService.Unit.Tests.RepositoryTests
         [TestMethod]
         public void GetSession_SessionExisted_UseDbContextReturnCorrect()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var mockSet = new Mock<DbSet<Session>>();
 
             var clientId = Guid.NewGuid();
@@ -202,13 +200,13 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Session>>().Setup(m => m.ElementType).Returns(data.ElementType);
             mockSet.As<IQueryable<Session>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
-            CustomerDBContext.Setup(x => x.Session).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Session).Returns(mockSet.Object);
 
-            var repository = new SessionRepository(CustomerDBContext.Object);
+            var repository = new SessionRepository(_customerDBContextMock.Object);
 
             var result = repository.GetSession(clientId, id2);
 
-            CustomerDBContext.Verify(x => x.Session, Times.Once);
+            _customerDBContextMock.Verify(x => x.Session, Times.Once);
             Assert.AreEqual(result.ClientId, clientId);
             Assert.AreEqual(result.UpdatedDate, updateDate2);
             Assert.AreEqual(result.CreatedDate, createDate2);
@@ -222,8 +220,6 @@ namespace CustomerService.Unit.Tests.RepositoryTests
         [TestMethod]
         public void GetSession_SessionNotExisted_UseDbContextReturnNull()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var mockSet = new Mock<DbSet<Session>>();
 
             var clientId = Guid.NewGuid();
@@ -252,21 +248,19 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Session>>().Setup(m => m.ElementType).Returns(data.ElementType);
             mockSet.As<IQueryable<Session>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
-            CustomerDBContext.Setup(x => x.Session).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Session).Returns(mockSet.Object);
 
-            var repository = new SessionRepository(CustomerDBContext.Object);
+            var repository = new SessionRepository(_customerDBContextMock.Object);
 
             var result = repository.GetSession(clientId, id2);
 
-            CustomerDBContext.Verify(x => x.Session, Times.Once);
+            _customerDBContextMock.Verify(x => x.Session, Times.Once);
             Assert.AreEqual(result, null);
         }
 
         [TestMethod]
         public void GetSessionByKey_SessionExisted_UseDbContextReturnCorrect()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var mockSet = new Mock<DbSet<Session>>();
 
             var clientId = Guid.NewGuid();
@@ -301,13 +295,13 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Session>>().Setup(m => m.ElementType).Returns(data.ElementType);
             mockSet.As<IQueryable<Session>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
-            CustomerDBContext.Setup(x => x.Session).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Session).Returns(mockSet.Object);
 
-            var repository = new SessionRepository(CustomerDBContext.Object);
+            var repository = new SessionRepository(_customerDBContextMock.Object);
 
             var result = repository.GetSessionByKey(key2);
 
-            CustomerDBContext.Verify(x => x.Session, Times.Once);
+            _customerDBContextMock.Verify(x => x.Session, Times.Once);
             Assert.AreEqual(result.ClientId, clientId);
             Assert.AreEqual(result.UpdatedDate, updateDate2);
             Assert.AreEqual(result.CreatedDate, createDate2);
@@ -321,8 +315,6 @@ namespace CustomerService.Unit.Tests.RepositoryTests
         [TestMethod]
         public void GetSessionByKey_SessionNotExisted_UseDbContextReturnNull()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var mockSet = new Mock<DbSet<Session>>();
 
             var clientId = Guid.NewGuid();
@@ -351,21 +343,19 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Session>>().Setup(m => m.ElementType).Returns(data.ElementType);
             mockSet.As<IQueryable<Session>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
-            CustomerDBContext.Setup(x => x.Session).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Session).Returns(mockSet.Object);
 
-            var repository = new SessionRepository(CustomerDBContext.Object);
+            var repository = new SessionRepository(_customerDBContextMock.Object);
 
             var result = repository.GetSessionByKey(key2);
 
-            CustomerDBContext.Verify(x => x.Session, Times.Once);
+            _customerDBContextMock.Verify(x => x.Session, Times.Once);
             Assert.AreEqual(result, null);
         }
 
         [TestMethod]
         public void ConfirmSession_SessionExisted_UseDbContextReturnCorrect()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var clientId = Guid.NewGuid();
             var id1 = Guid.NewGuid();
             var id2 = Guid.NewGuid();
@@ -401,25 +391,23 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Session>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
             mockSet.Setup(m => m.Add(It.IsAny<Session>()));
 
-            CustomerDBContext.Setup(x => x.Session).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.Set<Session>()).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
+            _customerDBContextMock.Setup(x => x.Session).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Set<Session>()).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.SaveChanges()).Returns(1);
 
-            var repository = new SessionRepository(CustomerDBContext.Object);
+            var repository = new SessionRepository(_customerDBContextMock.Object);
 
             var result = repository.ConfirmSession(clientId, id1);
 
             Assert.IsTrue(result);
-            CustomerDBContext.Verify(x => x.Session, Times.Exactly(1));
-            CustomerDBContext.Verify(x => x.SaveChanges(), Times.Once);
+            _customerDBContextMock.Verify(x => x.Session, Times.Exactly(1));
+            _customerDBContextMock.Verify(x => x.SaveChanges(), Times.Once);
             Assert.AreEqual(result, true);
         }
 
         [TestMethod]
         public void ConfirmSession_SessionNotExisted_UseDbContextReturnCorrect()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var clientId = Guid.NewGuid();
             var id1 = Guid.NewGuid();
             var id2 = Guid.NewGuid();
@@ -449,24 +437,22 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Session>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
             mockSet.Setup(m => m.Add(It.IsAny<Session>()));
 
-            CustomerDBContext.Setup(x => x.Session).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.Set<Session>()).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
+            _customerDBContextMock.Setup(x => x.Session).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Set<Session>()).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.SaveChanges()).Returns(1);
 
-            var repository = new SessionRepository(CustomerDBContext.Object);
+            var repository = new SessionRepository(_customerDBContextMock.Object);
 
             var result = repository.ConfirmSession(clientId, id2);
 
-            CustomerDBContext.Verify(x => x.Session, Times.Exactly(1));
-            CustomerDBContext.Verify(x => x.SaveChanges(), Times.Never);
+            _customerDBContextMock.Verify(x => x.Session, Times.Exactly(1));
+            _customerDBContextMock.Verify(x => x.SaveChanges(), Times.Never);
             Assert.AreEqual(result, false);
         }
 
         [TestMethod]
         public void DisableSession_SessionExisted_UseDbContextReturnCorrect()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var clientId = Guid.NewGuid();
             var id1 = Guid.NewGuid();
             var id2 = Guid.NewGuid();
@@ -501,24 +487,22 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Session>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
             mockSet.Setup(m => m.Add(It.IsAny<Session>()));
 
-            CustomerDBContext.Setup(x => x.Session).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.Set<Session>()).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
+            _customerDBContextMock.Setup(x => x.Session).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Set<Session>()).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.SaveChanges()).Returns(1);
 
-            var repository = new SessionRepository(CustomerDBContext.Object);
+            var repository = new SessionRepository(_customerDBContextMock.Object);
 
             var result = repository.DisableSession(clientId, id1);
 
-            CustomerDBContext.Verify(x => x.Session, Times.Exactly(1));
-            CustomerDBContext.Verify(x => x.SaveChanges(), Times.Once);
+            _customerDBContextMock.Verify(x => x.Session, Times.Exactly(1));
+            _customerDBContextMock.Verify(x => x.SaveChanges(), Times.Once);
             Assert.AreEqual(result, true);
         }
 
         [TestMethod]
         public void DisableSession_SessionNotExisted_UseDbContextReturnCorrect()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var clientId = Guid.NewGuid();
             var id1 = Guid.NewGuid();
             var id2 = Guid.NewGuid();
@@ -547,16 +531,16 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Session>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
             mockSet.Setup(m => m.Add(It.IsAny<Session>()));
 
-            CustomerDBContext.Setup(x => x.Session).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.Set<Session>()).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
+            _customerDBContextMock.Setup(x => x.Session).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Set<Session>()).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.SaveChanges()).Returns(1);
 
-            var repository = new SessionRepository(CustomerDBContext.Object);
+            var repository = new SessionRepository(_customerDBContextMock.Object);
 
             var result = repository.DisableSession(clientId, id2);
 
-            CustomerDBContext.Verify(x => x.Session, Times.Exactly(1));
-            CustomerDBContext.Verify(x => x.SaveChanges(), Times.Never);
+            _customerDBContextMock.Verify(x => x.Session, Times.Exactly(1));
+            _customerDBContextMock.Verify(x => x.SaveChanges(), Times.Never);
             Assert.AreEqual(result, false);
         }
     }

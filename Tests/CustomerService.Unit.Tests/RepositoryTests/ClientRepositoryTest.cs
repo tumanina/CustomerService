@@ -13,13 +13,17 @@ namespace CustomerService.Unit.Tests.RepositoryTests
     [TestClass]
     public class ClientRepositoryTest
     {
-        private static readonly Mock<ICustomerDBContext> CustomerDBContext = new Mock<ICustomerDBContext>();
+        private static readonly Mock<ICustomerDBContext> _customerDBContextMock = new Mock<ICustomerDBContext>();
+
+        [TestCleanup]
+        public void TestCleanUp()
+        {
+            _customerDBContextMock.Invocations.Clear();
+        }
 
         [TestMethod]
         public void GetClientByName_ClientExisted_UseDbContextReturnCorrect()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var mockSet = new Mock<DbSet<Client>>();
 
             var id1 = Guid.NewGuid();
@@ -48,13 +52,13 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Client>>().Setup(m => m.ElementType).Returns(data.ElementType);
             mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
-            CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Client).Returns(mockSet.Object);
 
-            var repository = new ClientRepository(CustomerDBContext.Object);
+            var repository = new ClientRepository(_customerDBContextMock.Object);
 
             var result = repository.GetClientByName(name2);
 
-            CustomerDBContext.Verify(x => x.Client, Times.Exactly(1));
+            _customerDBContextMock.Verify(x => x.Client, Times.Exactly(1));
             Assert.AreEqual(result.Name, name2);
             Assert.AreEqual(result.Email, email2);
             Assert.AreEqual(result.PasswordHash, passwordHashed2);
@@ -68,8 +72,6 @@ namespace CustomerService.Unit.Tests.RepositoryTests
         [TestMethod]
         public void GetClientsByName_ClientNotExisted_UseDbContextReturnCorrect()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var mockSet = new Mock<DbSet<Client>>();
 
             var id1 = Guid.NewGuid();
@@ -99,21 +101,19 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Client>>().Setup(m => m.ElementType).Returns(data.ElementType);
             mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
-            CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Client).Returns(mockSet.Object);
 
-            var repository = new ClientRepository(CustomerDBContext.Object);
+            var repository = new ClientRepository(_customerDBContextMock.Object);
 
             var result = repository.GetClientByName(name3);
 
-            CustomerDBContext.Verify(x => x.Client, Times.Exactly(1));
+            _customerDBContextMock.Verify(x => x.Client, Times.Exactly(1));
             Assert.AreEqual(result, null);
         }
 
         [TestMethod]
         public void GetClientByEmail_ClientExisted_UseDbContextReturnCorrect()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var mockSet = new Mock<DbSet<Client>>();
 
             var id1 = Guid.NewGuid();
@@ -142,13 +142,13 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Client>>().Setup(m => m.ElementType).Returns(data.ElementType);
             mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
-            CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Client).Returns(mockSet.Object);
 
-            var repository = new ClientRepository(CustomerDBContext.Object);
+            var repository = new ClientRepository(_customerDBContextMock.Object);
 
             var result = repository.GetClientByEmail(email2);
 
-            CustomerDBContext.Verify(x => x.Client, Times.Exactly(1));
+            _customerDBContextMock.Verify(x => x.Client, Times.Exactly(1));
             Assert.AreEqual(result.Name, name2);
             Assert.AreEqual(result.Email, email2);
             Assert.AreEqual(result.PasswordHash, passwordHashed2);
@@ -162,8 +162,6 @@ namespace CustomerService.Unit.Tests.RepositoryTests
         [TestMethod]
         public void GetClientsByEmail_ClientNotExisted_UseDbContextReturnCorrect()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var mockSet = new Mock<DbSet<Client>>();
 
             var id1 = Guid.NewGuid();
@@ -193,21 +191,19 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Client>>().Setup(m => m.ElementType).Returns(data.ElementType);
             mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
 
-            CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Client).Returns(mockSet.Object);
 
-            var repository = new ClientRepository(CustomerDBContext.Object);
+            var repository = new ClientRepository(_customerDBContextMock.Object);
 
             var result = repository.GetClientByEmail(email3);
 
-            CustomerDBContext.Verify(x => x.Client, Times.Exactly(1));
+            _customerDBContextMock.Verify(x => x.Client, Times.Exactly(1));
             Assert.AreEqual(result, null);
         }
 
         [TestMethod]
         public void CreateClient_Correct_UseDbContextReturnCorrect()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var email = "email2@mail.ru";
             var name = "name1";
@@ -247,16 +243,16 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
             mockSet.Setup(m => m.Add(It.IsAny<Client>()));
 
-            CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet0.Object);
-            CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
+            _customerDBContextMock.Setup(x => x.Client).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Set<Client>()).Returns(mockSet0.Object);
+            _customerDBContextMock.Setup(x => x.SaveChanges()).Returns(1);
 
-            var repository = new ClientRepository(CustomerDBContext.Object);
+            var repository = new ClientRepository(_customerDBContextMock.Object);
 
             var result = repository.CreateClient(email, name, password, activationCode);
 
-            CustomerDBContext.Verify(x => x.Set<Client>(), Times.Once);
-            CustomerDBContext.Verify(x => x.SaveChanges(), Times.Once);
+            _customerDBContextMock.Verify(x => x.Set<Client>(), Times.Once);
+            _customerDBContextMock.Verify(x => x.SaveChanges(), Times.Once);
             mockSet0.Verify(x => x.Add(It.IsAny<Client>()), Times.Once);
             Assert.AreEqual(client.Email, email);
             Assert.AreEqual(client.Name, name);
@@ -266,8 +262,6 @@ namespace CustomerService.Unit.Tests.RepositoryTests
         [TestMethod]
         public void ActivateClient_ClientExisted_UseDbContextSaveReturnTrue()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var id1 = Guid.NewGuid();
             var id2 = Guid.NewGuid();
             var email1 = "email1@mail.ru";
@@ -297,24 +291,22 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
             mockSet.Setup(m => m.Add(It.IsAny<Client>()));
 
-            CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
+            _customerDBContextMock.Setup(x => x.Client).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.SaveChanges()).Returns(1);
 
-            var repository = new ClientRepository(CustomerDBContext.Object);
+            var repository = new ClientRepository(_customerDBContextMock.Object);
 
             var result = repository.ActivateClient(activationCode1);
 
             Assert.IsTrue(result);
-            CustomerDBContext.Verify(x => x.Client, Times.Exactly(1));
-            CustomerDBContext.Verify(x => x.SaveChanges(), Times.Once);
+            _customerDBContextMock.Verify(x => x.Client, Times.Exactly(1));
+            _customerDBContextMock.Verify(x => x.SaveChanges(), Times.Once);
         }
 
         [TestMethod]
         public void ActivateClient_ClientNotExisted_UseDbContextReturnFalse()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var id1 = Guid.NewGuid();
             var id2 = Guid.NewGuid();
             var email1 = "email1@mail.ru";
@@ -345,25 +337,22 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
             mockSet.Setup(m => m.Add(It.IsAny<Client>()));
 
-            CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
+            _customerDBContextMock.Setup(x => x.Client).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.SaveChanges()).Returns(1);
 
-            var repository = new ClientRepository(CustomerDBContext.Object);
+            var repository = new ClientRepository(_customerDBContextMock.Object);
 
             var result = repository.ActivateClient(activationCode3);
 
             Assert.IsTrue(result == false);
-            CustomerDBContext.Verify(x => x.Client, Times.Exactly(1));
-            CustomerDBContext.Verify(x => x.SaveChanges(), Times.Never);
+            _customerDBContextMock.Verify(x => x.Client, Times.Exactly(1));
+            _customerDBContextMock.Verify(x => x.SaveChanges(), Times.Never);
         }
-
 
         [TestMethod]
         public void UpdateGoogleAuthCode_ClientExisted_UseDbContextSaveReturnTrue()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var id1 = Guid.NewGuid();
             var id2 = Guid.NewGuid();
             var email1 = "email1@mail.ru";
@@ -396,24 +385,22 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
             mockSet.Setup(m => m.Add(It.IsAny<Client>()));
 
-            CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
+            _customerDBContextMock.Setup(x => x.Client).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.SaveChanges()).Returns(1);
 
-            var repository = new ClientRepository(CustomerDBContext.Object);
+            var repository = new ClientRepository(_customerDBContextMock.Object);
 
             var result = repository.UpdateGoogleAuthCode(id2, authCode3);
 
             Assert.IsTrue(result);
-            CustomerDBContext.Verify(x => x.Client, Times.Exactly(1));
-            CustomerDBContext.Verify(x => x.SaveChanges(), Times.Once);
+            _customerDBContextMock.Verify(x => x.Client, Times.Exactly(1));
+            _customerDBContextMock.Verify(x => x.SaveChanges(), Times.Once);
         }
 
         [TestMethod]
         public void UpdateGoogleAuthCode_ClientNotExisted_UseDbContextReturnFalse()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var id1 = Guid.NewGuid();
             var id2 = Guid.NewGuid();
             var email1 = "email1@mail.ru";
@@ -446,24 +433,22 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
             mockSet.Setup(m => m.Add(It.IsAny<Client>()));
 
-            CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
+            _customerDBContextMock.Setup(x => x.Client).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.SaveChanges()).Returns(1);
 
-            var repository = new ClientRepository(CustomerDBContext.Object);
+            var repository = new ClientRepository(_customerDBContextMock.Object);
 
             var result = repository.UpdateGoogleAuthCode(Guid.NewGuid(), authCode3);
 
             Assert.IsTrue(result == false);
-            CustomerDBContext.Verify(x => x.Client, Times.Exactly(1));
-            CustomerDBContext.Verify(x => x.SaveChanges(), Times.Never);
+            _customerDBContextMock.Verify(x => x.Client, Times.Exactly(1));
+            _customerDBContextMock.Verify(x => x.SaveChanges(), Times.Never);
         }
 
         [TestMethod]
         public void ActivateGoogleAuthCode_ClientExisted_UseDbContextSaveReturnTrue()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var id1 = Guid.NewGuid();
             var id2 = Guid.NewGuid();
             var email1 = "email1@mail.ru";
@@ -493,24 +478,22 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
             mockSet.Setup(m => m.Add(It.IsAny<Client>()));
 
-            CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
+            _customerDBContextMock.Setup(x => x.Client).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.SaveChanges()).Returns(1);
 
-            var repository = new ClientRepository(CustomerDBContext.Object);
+            var repository = new ClientRepository(_customerDBContextMock.Object);
 
             var result = repository.ActivateGoogleAuthCode(id2);
 
             Assert.IsTrue(result);
-            CustomerDBContext.Verify(x => x.Client, Times.Exactly(1));
-            CustomerDBContext.Verify(x => x.SaveChanges(), Times.Once);
+            _customerDBContextMock.Verify(x => x.Client, Times.Exactly(1));
+            _customerDBContextMock.Verify(x => x.SaveChanges(), Times.Once);
         }
 
         [TestMethod]
         public void ActivateGoogleAuthCode_ClientNotExisted_UseDbContextReturnFalse()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var id1 = Guid.NewGuid();
             var id2 = Guid.NewGuid();
             var email1 = "email1@mail.ru";
@@ -540,24 +523,22 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
             mockSet.Setup(m => m.Add(It.IsAny<Client>()));
 
-            CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
+            _customerDBContextMock.Setup(x => x.Client).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.SaveChanges()).Returns(1);
 
-            var repository = new ClientRepository(CustomerDBContext.Object);
+            var repository = new ClientRepository(_customerDBContextMock.Object);
 
             var result = repository.ActivateGoogleAuthCode(Guid.NewGuid());
 
             Assert.IsTrue(result == false);
-            CustomerDBContext.Verify(x => x.Client, Times.Exactly(1));
-            CustomerDBContext.Verify(x => x.SaveChanges(), Times.Never);
+            _customerDBContextMock.Verify(x => x.Client, Times.Exactly(1));
+            _customerDBContextMock.Verify(x => x.SaveChanges(), Times.Never);
         }
 
         [TestMethod]
         public void DeactivateGoogleAuthCode_ClientExisted_UseDbContextSaveReturnTrue()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var id1 = Guid.NewGuid();
             var id2 = Guid.NewGuid();
             var email1 = "email1@mail.ru";
@@ -587,24 +568,22 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
             mockSet.Setup(m => m.Add(It.IsAny<Client>()));
 
-            CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
+            _customerDBContextMock.Setup(x => x.Client).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.SaveChanges()).Returns(1);
 
-            var repository = new ClientRepository(CustomerDBContext.Object);
+            var repository = new ClientRepository(_customerDBContextMock.Object);
 
             var result = repository.DeactivateGoogleAuthCode(id2);
 
             Assert.IsTrue(result);
-            CustomerDBContext.Verify(x => x.Client, Times.Exactly(1));
-            CustomerDBContext.Verify(x => x.SaveChanges(), Times.Once);
+            _customerDBContextMock.Verify(x => x.Client, Times.Exactly(1));
+            _customerDBContextMock.Verify(x => x.SaveChanges(), Times.Once);
         }
 
         [TestMethod]
         public void DeactivateGoogleAuthCode_ClientNotExisted_UseDbContextReturnFalse()
         {
-            CustomerDBContext.Invocations.Clear();
-
             var id1 = Guid.NewGuid();
             var id2 = Guid.NewGuid();
             var email1 = "email1@mail.ru";
@@ -634,17 +613,17 @@ namespace CustomerService.Unit.Tests.RepositoryTests
             mockSet.As<IQueryable<Client>>().Setup(m => m.GetEnumerator()).Returns(() => data.GetEnumerator());
             mockSet.Setup(m => m.Add(It.IsAny<Client>()));
 
-            CustomerDBContext.Setup(x => x.Client).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
-            CustomerDBContext.Setup(x => x.SaveChanges()).Returns(1);
+            _customerDBContextMock.Setup(x => x.Client).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.Set<Client>()).Returns(mockSet.Object);
+            _customerDBContextMock.Setup(x => x.SaveChanges()).Returns(1);
 
-            var repository = new ClientRepository(CustomerDBContext.Object);
+            var repository = new ClientRepository(_customerDBContextMock.Object);
 
             var result = repository.DeactivateGoogleAuthCode(Guid.NewGuid());
 
             Assert.IsTrue(result == false);
-            CustomerDBContext.Verify(x => x.Client, Times.Exactly(1));
-            CustomerDBContext.Verify(x => x.SaveChanges(), Times.Never);
+            _customerDBContextMock.Verify(x => x.Client, Times.Exactly(1));
+            _customerDBContextMock.Verify(x => x.SaveChanges(), Times.Never);
         }
     }
 }

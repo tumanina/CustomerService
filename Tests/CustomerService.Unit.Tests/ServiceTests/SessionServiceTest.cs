@@ -15,15 +15,19 @@ namespace CustomerService.Unit.Tests.ServiceTests
     [TestClass]
     public class SessionServiceTest
     {
-        private static readonly Mock<ISessionRepository> SessionRepository = new Mock<ISessionRepository>();
-        private static readonly Mock<IClientService> ClientService = new Mock<IClientService>();
+        private static readonly Mock<ISessionRepository> _sessionRepositoryMock = new Mock<ISessionRepository>();
+        private static readonly Mock<IClientService> _clientRepositoryMock = new Mock<IClientService>();
+
+        [TestCleanup]
+        public void TestCleanUp()
+        {
+            _clientRepositoryMock.Invocations.Clear();
+            _sessionRepositoryMock.Invocations.Clear();
+        }
 
         [TestMethod]
         public void GetSessions_SessionsExisted_ShouldReturnCorrect()
         {
-            SessionRepository.Invocations.Clear();
-            ClientService.Invocations.Clear();
-
             var clientId = Guid.NewGuid();
             var id1 = Guid.NewGuid();
             var id2 = Guid.NewGuid();
@@ -58,13 +62,13 @@ namespace CustomerService.Unit.Tests.ServiceTests
                 TotalCount = 3
             };
 
-            SessionRepository.Setup(x => x.GetSessions(clientId, false, 1, 20)).Returns(data);
+            _sessionRepositoryMock.Setup(x => x.GetSessions(clientId, false, 1, 20)).Returns(data);
 
-            var service = new SessionService(SessionRepository.Object, ClientService.Object);
+            var service = new SessionService(_sessionRepositoryMock.Object, _clientRepositoryMock.Object);
 
             var result = service.GetSessions(clientId);
 
-            SessionRepository.Verify(x => x.GetSessions(clientId, false, 1, 20), Times.Once);
+            _sessionRepositoryMock.Verify(x => x.GetSessions(clientId, false, 1, 20), Times.Once);
             Assert.AreEqual(result.PageCount, 1);
             Assert.AreEqual(result.PageIndex, 1);
             Assert.AreEqual(result.PageSize, 20);
@@ -78,9 +82,6 @@ namespace CustomerService.Unit.Tests.ServiceTests
         [TestMethod]
         public void GetSessions_SessionsNotExisted_ShouldReturnCorrect()
         {
-            SessionRepository.Invocations.Clear();
-            ClientService.Invocations.Clear();
-
             var clientId = Guid.NewGuid();
 
             var data = new PagedList<SessionEntity>
@@ -92,13 +93,13 @@ namespace CustomerService.Unit.Tests.ServiceTests
                 TotalCount = 0
             };
 
-            SessionRepository.Setup(x => x.GetSessions(clientId, false, 1, 20)).Returns(data);
+            _sessionRepositoryMock.Setup(x => x.GetSessions(clientId, false, 1, 20)).Returns(data);
 
-            var service = new SessionService(SessionRepository.Object, ClientService.Object);
+            var service = new SessionService(_sessionRepositoryMock.Object, _clientRepositoryMock.Object);
 
             var result = service.GetSessions(clientId);
 
-            SessionRepository.Verify(x => x.GetSessions(clientId, false, 1, 20), Times.Once);
+            _sessionRepositoryMock.Verify(x => x.GetSessions(clientId, false, 1, 20), Times.Once);
             Assert.AreEqual(result.PageCount, 0);
             Assert.AreEqual(result.PageIndex, 1);
             Assert.AreEqual(result.PageSize, 20);
@@ -109,9 +110,6 @@ namespace CustomerService.Unit.Tests.ServiceTests
         [TestMethod]
         public void GetSession_SessionExisted_ShouldReturnCorrect()
         {
-            SessionRepository.Invocations.Clear();
-            ClientService.Invocations.Clear();
-
             var clientId = Guid.NewGuid();
             var id = Guid.NewGuid();
             var key1 = Guid.NewGuid().ToString();
@@ -122,13 +120,13 @@ namespace CustomerService.Unit.Tests.ServiceTests
 
             var session = new SessionEntity { Id = id, ClientId = clientId, IP = ip1, SessionKey = key1, CreatedDate = createDate1, UpdatedDate = updateDate1, ExpiredDate = expireDate1, Confirmed = true, Enabled = true };
 
-            SessionRepository.Setup(x => x.GetSession(clientId, id)).Returns(session);
+            _sessionRepositoryMock.Setup(x => x.GetSession(clientId, id)).Returns(session);
 
-            var service = new SessionService(SessionRepository.Object, ClientService.Object);
+            var service = new SessionService(_sessionRepositoryMock.Object, _clientRepositoryMock.Object);
 
             var result = service.GetSession(clientId, id);
 
-            SessionRepository.Verify(x => x.GetSession(clientId, id), Times.Once);
+            _sessionRepositoryMock.Verify(x => x.GetSession(clientId, id), Times.Once);
             Assert.AreEqual(result.ClientId, clientId);
             Assert.AreEqual(result.UpdatedDate, updateDate1);
             Assert.AreEqual(result.CreatedDate, createDate1);
@@ -140,28 +138,22 @@ namespace CustomerService.Unit.Tests.ServiceTests
         [TestMethod]
         public void GetSession_SessionNotExisted_ShouldReturnNull()
         {
-            SessionRepository.Invocations.Clear();
-            ClientService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var clientId = Guid.NewGuid();
 
-            SessionRepository.Setup(x => x.GetSession(clientId, id)).Returns((SessionEntity)null);
+            _sessionRepositoryMock.Setup(x => x.GetSession(clientId, id)).Returns((SessionEntity)null);
 
-            var service = new SessionService(SessionRepository.Object, ClientService.Object);
+            var service = new SessionService(_sessionRepositoryMock.Object, _clientRepositoryMock.Object);
 
             var result = service.GetSession(clientId, id);
 
-            SessionRepository.Verify(x => x.GetSession(clientId, id), Times.Once);
+            _sessionRepositoryMock.Verify(x => x.GetSession(clientId, id), Times.Once);
             Assert.AreEqual(result, null);
         }
 
         [TestMethod]
         public void GetSessionByKey_SessionExisted_ShouldReturnCorrect()
         {
-            SessionRepository.Invocations.Clear();
-            ClientService.Invocations.Clear();
-
             var clientId = Guid.NewGuid();
             var id = Guid.NewGuid();
             var key1 = Guid.NewGuid().ToString();
@@ -172,13 +164,13 @@ namespace CustomerService.Unit.Tests.ServiceTests
 
             var session = new SessionEntity { Id = id, ClientId = clientId, IP = ip1, SessionKey = key1, CreatedDate = createDate1, UpdatedDate = updateDate1, ExpiredDate = expireDate1, Confirmed = true, Enabled = true };
 
-            SessionRepository.Setup(x => x.GetSessionByKey(key1)).Returns(session);
+            _sessionRepositoryMock.Setup(x => x.GetSessionByKey(key1)).Returns(session);
 
-            var service = new SessionService(SessionRepository.Object, ClientService.Object);
+            var service = new SessionService(_sessionRepositoryMock.Object, _clientRepositoryMock.Object);
 
             var result = service.GetSessionByKey(key1);
 
-            SessionRepository.Verify(x => x.GetSessionByKey(key1), Times.Once);
+            _sessionRepositoryMock.Verify(x => x.GetSessionByKey(key1), Times.Once);
             Assert.AreEqual(result.ClientId, clientId);
             Assert.AreEqual(result.UpdatedDate, updateDate1);
             Assert.AreEqual(result.CreatedDate, createDate1);
@@ -190,27 +182,21 @@ namespace CustomerService.Unit.Tests.ServiceTests
         [TestMethod]
         public void GetSessionByKey_SessionNotExisted_ShouldReturnNull()
         {
-            SessionRepository.Invocations.Clear();
-            ClientService.Invocations.Clear();
-
             var key1 = Guid.NewGuid().ToString();
 
-            SessionRepository.Setup(x => x.GetSessionByKey(key1)).Returns((SessionEntity)null);
+            _sessionRepositoryMock.Setup(x => x.GetSessionByKey(key1)).Returns((SessionEntity)null);
 
-            var service = new SessionService(SessionRepository.Object, ClientService.Object);
+            var service = new SessionService(_sessionRepositoryMock.Object, _clientRepositoryMock.Object);
 
             var result = service.GetSessionByKey(key1);
 
-            SessionRepository.Verify(x => x.GetSessionByKey(key1), Times.Once);
+            _sessionRepositoryMock.Verify(x => x.GetSessionByKey(key1), Times.Once);
             Assert.AreEqual(result, null);
         }
 
         [TestMethod]
         public void CreateSession_Success_ShouldReturnSession()
         {
-            SessionRepository.Invocations.Clear();
-            ClientService.Invocations.Clear();
-
             var name = "name1";
             var password = "password1";
             var clientId = Guid.NewGuid();
@@ -224,14 +210,14 @@ namespace CustomerService.Unit.Tests.ServiceTests
 
             var entity = new SessionEntity { Id = id, ClientId = clientId, IP = ip1, SessionKey = key1, CreatedDate = createDate1, UpdatedDate = updateDate1, ExpiredDate = expireDate1, Confirmed = false, Enabled = false };
 
-            ClientService.Setup(x => x.Authentification(name, password)).Returns(new Client { Id = clientId, Name = name });
-            SessionRepository.Setup(x => x.CreateSession(clientId, ip1, interval, true)).Returns(entity);
+            _clientRepositoryMock.Setup(x => x.Authentification(name, password)).Returns(new Client { Id = clientId, Name = name });
+            _sessionRepositoryMock.Setup(x => x.CreateSession(clientId, ip1, interval, true)).Returns(entity);
 
-            var service = new SessionService(SessionRepository.Object, ClientService.Object);
+            var service = new SessionService(_sessionRepositoryMock.Object, _clientRepositoryMock.Object);
 
             var result = service.CreateSession(name, password, ip1, interval);
 
-            SessionRepository.Verify(x => x.CreateSession(clientId, ip1, interval, true), Times.Once);
+            _sessionRepositoryMock.Verify(x => x.CreateSession(clientId, ip1, interval, true), Times.Once);
             Assert.AreEqual(result.ClientId, clientId);
             Assert.AreEqual(result.CreatedDate, createDate1);
             Assert.AreEqual(result.UpdatedDate, updateDate1);
@@ -245,9 +231,6 @@ namespace CustomerService.Unit.Tests.ServiceTests
         [TestMethod]
         public void CreateSession_ServiceReturnNull_ShouldReturnNull()
         {
-            SessionRepository.Invocations.Clear();
-            ClientService.Invocations.Clear();
-
             var name = "name1";
             var password = "password1";
             var clientId = Guid.NewGuid();
@@ -258,53 +241,47 @@ namespace CustomerService.Unit.Tests.ServiceTests
             var expireDate1 = DateTime.UtcNow.AddSeconds(200);
             var updateDate1 = DateTime.UtcNow;
 
-            SessionRepository.Setup(x => x.CreateSession(clientId, ip1, interval, true)).Returns((SessionEntity)null);
-            ClientService.Setup(x => x.Authentification(name, password)).Returns(new Client { Id = clientId, Name = name });
+            _sessionRepositoryMock.Setup(x => x.CreateSession(clientId, ip1, interval, true)).Returns((SessionEntity)null);
+            _clientRepositoryMock.Setup(x => x.Authentification(name, password)).Returns(new Client { Id = clientId, Name = name });
 
-            var service = new SessionService(SessionRepository.Object, ClientService.Object);
+            var service = new SessionService(_sessionRepositoryMock.Object, _clientRepositoryMock.Object);
 
             var result = service.CreateSession(name, password, ip1, interval);
 
-            SessionRepository.Verify(x => x.CreateSession(clientId, ip1, interval, true), Times.Once);
+            _sessionRepositoryMock.Verify(x => x.CreateSession(clientId, ip1, interval, true), Times.Once);
             Assert.AreEqual(result, null);
         }
 
         [TestMethod]
         public void ConfirmSession_Success_ShouldReturnTrue()
         {
-            SessionRepository.Invocations.Clear();
-            ClientService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var clientId = Guid.NewGuid();
             var oneTimePasword = "12345678";
 
-            SessionRepository.Setup(x => x.ConfirmSession(clientId, id)).Returns(true);
-            ClientService.Setup(x => x.ValidateClientByGoogleAuth(clientId, oneTimePasword)).Returns(true);
+            _sessionRepositoryMock.Setup(x => x.ConfirmSession(clientId, id)).Returns(true);
+            _clientRepositoryMock.Setup(x => x.ValidateClientByGoogleAuth(clientId, oneTimePasword)).Returns(true);
 
-            var service = new SessionService(SessionRepository.Object, ClientService.Object);
+            var service = new SessionService(_sessionRepositoryMock.Object, _clientRepositoryMock.Object);
 
             var result = service.ConfirmSession(clientId, id, oneTimePasword);
 
-            SessionRepository.Verify(x => x.ConfirmSession(clientId, id), Times.Once);
-            ClientService.Verify(x => x.ValidateClientByGoogleAuth(clientId, oneTimePasword), Times.Once);
+            _sessionRepositoryMock.Verify(x => x.ConfirmSession(clientId, id), Times.Once);
+            _clientRepositoryMock.Verify(x => x.ValidateClientByGoogleAuth(clientId, oneTimePasword), Times.Once);
             Assert.AreEqual(result, true);
         }
 
         [TestMethod]
         public void ConfirmSession_GoogleAuthReturnsFalse_ShouldThrowException()
         {
-            SessionRepository.Invocations.Clear();
-            ClientService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var clientId = Guid.NewGuid();
             var oneTimePasword = "12345678";
 
-            SessionRepository.Setup(x => x.ConfirmSession(clientId, id)).Returns(true);
-            ClientService.Setup(x => x.ValidateClientByGoogleAuth(clientId, oneTimePasword)).Returns(false);
+            _sessionRepositoryMock.Setup(x => x.ConfirmSession(clientId, id)).Returns(true);
+            _clientRepositoryMock.Setup(x => x.ValidateClientByGoogleAuth(clientId, oneTimePasword)).Returns(false);
 
-            var service = new SessionService(SessionRepository.Object, ClientService.Object);
+            var service = new SessionService(_sessionRepositoryMock.Object, _clientRepositoryMock.Object);
 
             try
             {
@@ -312,39 +289,33 @@ namespace CustomerService.Unit.Tests.ServiceTests
             }
             catch (Exception)
             {
-                SessionRepository.Verify(x => x.ConfirmSession(clientId, id), Times.Never);
-                ClientService.Verify(x => x.ValidateClientByGoogleAuth(clientId, oneTimePasword), Times.Once);
+                _sessionRepositoryMock.Verify(x => x.ConfirmSession(clientId, id), Times.Never);
+                _clientRepositoryMock.Verify(x => x.ValidateClientByGoogleAuth(clientId, oneTimePasword), Times.Once);
             }
         }
 
         [TestMethod]
         public void ConfirmSession_False_ShouldReturnFalse()
         {
-            SessionRepository.Invocations.Clear();
-            ClientService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var clientId = Guid.NewGuid();
             var oneTimePasword = "12345678";
 
-            SessionRepository.Setup(x => x.ConfirmSession(clientId, id)).Returns(false);
-            ClientService.Setup(x => x.ValidateClientByGoogleAuth(clientId, oneTimePasword)).Returns(true);
+            _sessionRepositoryMock.Setup(x => x.ConfirmSession(clientId, id)).Returns(false);
+            _clientRepositoryMock.Setup(x => x.ValidateClientByGoogleAuth(clientId, oneTimePasword)).Returns(true);
 
-            var service = new SessionService(SessionRepository.Object, ClientService.Object);
+            var service = new SessionService(_sessionRepositoryMock.Object, _clientRepositoryMock.Object);
 
             var result = service.ConfirmSession(clientId, id, oneTimePasword);
 
-            SessionRepository.Verify(x => x.ConfirmSession(clientId, id), Times.Once);
-            ClientService.Verify(x => x.ValidateClientByGoogleAuth(clientId, oneTimePasword), Times.Once);
+            _sessionRepositoryMock.Verify(x => x.ConfirmSession(clientId, id), Times.Once);
+            _clientRepositoryMock.Verify(x => x.ValidateClientByGoogleAuth(clientId, oneTimePasword), Times.Once);
             Assert.AreEqual(result, false);
         }
 
         [TestMethod]
         public void IsSessionConfirmRequired_SessionExistAndConfirm_ShouldReturnFalse()
         {
-            SessionRepository.Invocations.Clear();
-            ClientService.Invocations.Clear();
-
             var clientId = Guid.NewGuid();
             var id = Guid.NewGuid();
             var key1 = Guid.NewGuid().ToString();
@@ -355,22 +326,19 @@ namespace CustomerService.Unit.Tests.ServiceTests
 
             var session = new SessionEntity { Id = id, ClientId = clientId, IP = ip1, SessionKey = key1, CreatedDate = createDate1, UpdatedDate = updateDate1, ExpiredDate = expireDate1, Confirmed = true, Enabled = true };
 
-            SessionRepository.Setup(x => x.GetSession(clientId, id)).Returns(session);
+            _sessionRepositoryMock.Setup(x => x.GetSession(clientId, id)).Returns(session);
 
-            var service = new SessionService(SessionRepository.Object, ClientService.Object);
+            var service = new SessionService(_sessionRepositoryMock.Object, _clientRepositoryMock.Object);
 
             var result = service.IsSessionConfirmRequired(clientId, id);
 
-            SessionRepository.Verify(x => x.GetSession(clientId, id), Times.Once);
+            _sessionRepositoryMock.Verify(x => x.GetSession(clientId, id), Times.Once);
             Assert.AreEqual(result, false);
         }
 
         [TestMethod]
         public void IsSessionConfirmRequired_SessionExistAndNotConfirm_ShouldReturnTrue()
         {
-            SessionRepository.Invocations.Clear();
-            ClientService.Invocations.Clear();
-
             var clientId = Guid.NewGuid();
             var id = Guid.NewGuid();
             var key1 = Guid.NewGuid().ToString();
@@ -381,70 +349,61 @@ namespace CustomerService.Unit.Tests.ServiceTests
 
             var session = new SessionEntity { Id = id, ClientId = clientId, IP = ip1, SessionKey = key1, CreatedDate = createDate1, UpdatedDate = updateDate1, ExpiredDate = expireDate1, Confirmed = false, Enabled = true };
 
-            SessionRepository.Setup(x => x.GetSession(clientId, id)).Returns(session);
+            _sessionRepositoryMock.Setup(x => x.GetSession(clientId, id)).Returns(session);
 
-            var service = new SessionService(SessionRepository.Object, ClientService.Object);
+            var service = new SessionService(_sessionRepositoryMock.Object, _clientRepositoryMock.Object);
 
             var result = service.IsSessionConfirmRequired(clientId, id);
 
-            SessionRepository.Verify(x => x.GetSession(clientId, id), Times.Once);
+            _sessionRepositoryMock.Verify(x => x.GetSession(clientId, id), Times.Once);
             Assert.AreEqual(result, true);
         }
 
         [TestMethod]
         public void IsSessionConfirmRequired_SessionNotExist_ShouldReturnFalse()
         {
-            SessionRepository.Invocations.Clear();
-            ClientService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var clientId = Guid.NewGuid();
 
-            SessionRepository.Setup(x => x.GetSession(clientId, id)).Returns((SessionEntity)null);
+            _sessionRepositoryMock.Setup(x => x.GetSession(clientId, id)).Returns((SessionEntity)null);
 
-            var service = new SessionService(SessionRepository.Object, ClientService.Object);
+            var service = new SessionService(_sessionRepositoryMock.Object, _clientRepositoryMock.Object);
 
             var result = service.IsSessionConfirmRequired(clientId, id);
 
-            SessionRepository.Verify(x => x.GetSession(clientId, id), Times.Once);
+            _sessionRepositoryMock.Verify(x => x.GetSession(clientId, id), Times.Once);
             Assert.AreEqual(result, null);
         }
 
         [TestMethod]
         public void DisableSession_Success_ShouldReturnTrue()
         {
-            SessionRepository.Invocations.Clear();
-            ClientService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var clientId = Guid.NewGuid();
 
-            SessionRepository.Setup(x => x.DisableSession(clientId, id)).Returns(true);
+            _sessionRepositoryMock.Setup(x => x.DisableSession(clientId, id)).Returns(true);
 
-            var service = new SessionService(SessionRepository.Object, ClientService.Object);
+            var service = new SessionService(_sessionRepositoryMock.Object, _clientRepositoryMock.Object);
 
             var result = service.DisableSession(clientId, id);
 
-            SessionRepository.Verify(x => x.DisableSession(clientId, id), Times.Once);
+            _sessionRepositoryMock.Verify(x => x.DisableSession(clientId, id), Times.Once);
             Assert.AreEqual(result, true);
         }
 
         [TestMethod]
         public void DisableSession_False_ShouldReturnFalse()
         {
-            SessionRepository.Invocations.Clear();
-            ClientService.Invocations.Clear();
-
             var id = Guid.NewGuid();
             var clientId = Guid.NewGuid();
 
-            SessionRepository.Setup(x => x.DisableSession(clientId, id)).Returns(false);
+            _sessionRepositoryMock.Setup(x => x.DisableSession(clientId, id)).Returns(false);
 
-            var service = new SessionService(SessionRepository.Object, ClientService.Object);
+            var service = new SessionService(_sessionRepositoryMock.Object, _clientRepositoryMock.Object);
 
             var result = service.DisableSession(clientId, id);
 
-            SessionRepository.Verify(x => x.DisableSession(clientId, id), Times.Once);
+            _sessionRepositoryMock.Verify(x => x.DisableSession(clientId, id), Times.Once);
             Assert.AreEqual(result, false);
         }
     }
